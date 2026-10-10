@@ -46,11 +46,15 @@ export default function Impacto() {
     const before = new Map(entries.filter((entry) => entry.phase === 'before').map((entry) => [entry.id, entry]));
     return entries.filter((entry) => entry.phase === 'after' && before.has(entry.id)).map((after) => ({ before: before.get(after.id)!, after }));
   }, [entries]);
-  const averages = measures.map((_, index) => {
-    if (!paired.length) return null;
-    const before = paired.reduce((total, pair) => total + pair.before.answers[index], 0) / paired.length;
-    const after = paired.reduce((total, pair) => total + pair.after.answers[index], 0) / paired.length;
-    return { before, after, delta: after - before };
+  const summaries = roles.map((profile) => {
+    const profilePairs = paired.filter((pair) => pair.before.role === profile.id);
+    const averages = measures.map((_, index) => {
+      if (!profilePairs.length) return null;
+      const before = profilePairs.reduce((total, pair) => total + pair.before.answers[index], 0) / profilePairs.length;
+      const after = profilePairs.reduce((total, pair) => total + pair.after.answers[index], 0) / profilePairs.length;
+      return { before, after, delta: after - before };
+    });
+    return { ...profile, pairs: profilePairs, averages };
   });
   const phase = activeId ? 'after' : 'before';
   const save = () => {
@@ -63,13 +67,25 @@ export default function Impacto() {
     else { setActiveId(''); localStorage.removeItem(activeKey); setMessage('Seguimiento guardado. Se ha actualizado el resumen de respuestas emparejadas.'); }
     setAnswers([0, 0, 0]); setConsent(false);
   };
-  const exportAggregate = () => {
-    if (!paired.length) return;
-    const rows = [['Indicador', 'Respuestas emparejadas', 'Antes (media 1-5)', 'Después (media 1-5)', 'Cambio medio']];
-    measures.forEach((measure, index) => { const value = averages[index]!; rows.push([measure, String(paired.length), value.before.toFixed(2), value.after.toFixed(2), value.delta.toFixed(2)]); });
+  const downloadCsv = (rows: string[][], filename: string) => {
     const csv = '\ufeff' + rows.map((row) => row.map((cell) => `"${cell.replaceAll('"', '""')}"`).join(',')).join('\r\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    const link = document.createElement('a'); link.href = url; link.download = 'sendia-pilotaje-agregado.csv'; link.click(); URL.revokeObjectURL(url);
+    const link = document.createElement('a'); link.href = url; link.download = filename; link.click(); URL.revokeObjectURL(url);
+  };
+  const exportAggregate = () => {
+    if (!paired.length) return;
+    const rows = [['Perfil', 'Indicador', 'n', 'Antes (media 1-5)', 'Después (media 1-5)', 'Cambio medio']];
+    summaries.forEach((summary) => measures.forEach((measure, index) => {
+      const value = summary.averages[index];
+      if (value) rows.push([summary.label, measure, String(summary.pairs.length), value.before.toFixed(2), value.after.toFixed(2), value.delta.toFixed(2)]);
+    }));
+    downloadCsv(rows, 'sendia-pilotaje-agregado-por-perfil.csv');
+  };
+  const exportResponses = () => {
+    if (!entries.length) return;
+    const rows = [['Perfil', 'Fase', ...measures.map((_, index) => `Indicador ${index + 1} (1-5)`), 'Identificador aleatorio de emparejamiento', 'Mes']];
+    entries.forEach((entry) => rows.push([entry.role, entry.phase === 'before' ? 'antes' : 'después', ...entry.answers.map(String), entry.id, /^\d{4}-\d{2}/.test(entry.savedAt) ? entry.savedAt.slice(0, 7) : '']));
+    downloadCsv(rows, 'sendia-respuestas-anonimas.csv');
   };
   const clear = () => {
     if (!window.confirm('¿Borrar todas las respuestas de pilotaje guardadas en este navegador?')) return;
@@ -78,7 +94,7 @@ export default function Impacto() {
 
   return <AppShell><div className="content pilot-page">
     <div className="eyebrow">PILOTAJE · MEDIDAS AUTODECLARADAS</div><h1 className="page-title serif">Impacto</h1><p className="subtitle">Compara cómo se sienten docentes y familias antes y después de explorar SendIA. Una señal para aprender, no una prueba de eficacia.</p>
-    <div className="pilot-banner"><strong>Instrumento de pilotaje en construcción</strong><span>No hay resultados reales todavía. Este cuestionario no está validado y sus resultados no demuestran causalidad. Recoge primero una línea inicial, explora la herramienta y vuelve para responder el seguimiento.</span></div>
+    <div className="pilot-banner"><strong>Instrumento de pilotaje en construcción</strong><span>No hay resultados reales todavía. Este cuestionario no está validado y sus resultados no demuestran causalidad. Recoge primero una línea inicial, explora la herramienta y vuelve para responder el seguimiento.</span><strong>Estos ítems miden percepción de utilidad del marco; no miden cambios en el alumnado.</strong></div>
     <div className="pilot-grid section-space">
       <section className="panel pilot-form"><div className="panel-heading"><h2>{phase === 'before' ? '01 · Antes de explorar' : '02 · Después de explorar'}</h2><span className={'status ' + (phase === 'before' ? 'draft' : '')}>{phase === 'before' ? 'Línea inicial' : 'Seguimiento'}</span></div>
         {phase === 'before' && <label className="pilot-role">Tu perfil<select value={role} onChange={(event) => setRole(event.target.value as Role)}>{roles.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>}
@@ -89,9 +105,9 @@ export default function Impacto() {
         {message && <p className="pilot-message" role="status">{message}</p>}
       </section>
       <section className="panel pilot-results"><div className="eyebrow">LECTURA AGREGADA</div><h2 className="serif">Cambios que podemos observar.</h2><p className="muted">Solo se comparan cuestionarios iniciales y de seguimiento emparejados en este navegador.</p><div className="pilot-count"><strong>{ready ? paired.length : '—'}</strong><span>pares completos<br/>de respuestas</span></div>
-        <div className="pilot-aggregate">{measures.map((measure, index) => <article key={measure}><h3>{measure}</h3>{averages[index] ? <div><span>Antes <strong>{averages[index]!.before.toFixed(1)}</strong></span><span>Después <strong>{averages[index]!.after.toFixed(1)}</strong></span><span>Cambio <strong>{averages[index]!.delta > 0 ? '+' : ''}{averages[index]!.delta.toFixed(1)}</strong></span></div> : <p>Aún no hay pares suficientes para calcular esta media.</p>}</article>)}</div>
-        <div className="pilot-actions"><button className="button button-secondary button-small" onClick={exportAggregate} disabled={!paired.length}>Descargar resumen agregado CSV</button><button className="case-back-link" onClick={clear} disabled={!entries.length}>Borrar datos locales</button></div>
-        <p className="pilot-privacy">Las respuestas se quedan en este navegador. La exportación contiene medias y número de pares, no respuestas individuales, nombres, correos ni datos de estudiantes. Para consolidar varios dispositivos, combina los resúmenes agregados fuera de la plataforma.</p>
+        <div className="pilot-aggregate">{summaries.map((summary) => <section key={summary.id}><h3>{summary.label} · n = {summary.pairs.length}</h3>{summary.pairs.length ? measures.map((measure, index) => <article key={measure}><h4>{measure}</h4>{summary.averages[index] && <div><span>Antes <strong>{summary.averages[index]!.before.toFixed(1)}</strong></span><span>Después <strong>{summary.averages[index]!.after.toFixed(1)}</strong></span><span>Cambio <strong>{summary.averages[index]!.delta > 0 ? '+' : ''}{summary.averages[index]!.delta.toFixed(1)}</strong></span></div>}</article>) : <p>Aún no hay pares completos de este perfil.</p>}</section>)}</div>
+        <div className="pilot-actions"><button className="button button-secondary button-small" onClick={exportAggregate} disabled={!paired.length}>Descargar resumen agregado CSV</button><button className="button button-secondary button-small" onClick={exportResponses} disabled={!entries.length}>Exportar mis respuestas (anónimas)</button><button className="case-back-link" onClick={clear} disabled={!entries.length}>Borrar datos locales</button></div>
+        <p className="pilot-privacy">Las respuestas se quedan en este navegador. El archivo individual no contiene nombres ni fechas exactas; incluye el mes y un identificador aleatorio para emparejar antes/después. Para evaluar a un grupo, cada participante exporta su archivo y quien coordina los reúne.</p>
       </section>
     </div>
     <section className="pilot-method"><div><span className="eyebrow">PROTOCOLO BREVE</span><h2>Un piloto pequeño, contado con honestidad.</h2></div><ol><li>Invitar a personas adultas docentes o familiares; no recopilar información identificable de menores.</li><li>Responder la línea inicial y recorrer Comprender con una situación ficticia o anonimizada.</li><li>Completar el seguimiento y exportar solo medias agregadas.</li><li>Informar número de pares, perfiles, contexto y limitaciones; no atribuir el cambio a SendIA sin un diseño que lo permita.</li></ol></section>
