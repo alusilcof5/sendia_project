@@ -1,7 +1,9 @@
 import type { ActionPlan } from '@/lib/schemas';
 
-export const plansStorageKey = 'miradas-plans-v1';
-export const legacyPlanStorageKey = 'miradas-ai-approved-plan-v1';
+export const plansStorageKey = 'sendia-plans-v1';
+export const previousPlansStorageKey = 'miradas-plans-v1';
+export const approvedPlanStorageKey = 'sendia-ai-approved-plan-v1';
+export const previousApprovedPlanStorageKey = 'miradas-ai-approved-plan-v1';
 
 export type PlanStatus = 'draft' | 'pending-approval' | 'approved' | 'completed';
 export type PlanReview = { id: string; note: string; savedAt: string };
@@ -40,35 +42,43 @@ export function parseStoredPlan(value: unknown): StoredPlan | null {
 
 export function readPlans(): StoredPlan[] {
   try {
-    const stored = JSON.parse(localStorage.getItem(plansStorageKey) || '[]');
-    const plans = Array.isArray(stored) ? stored.map(parseStoredPlan).filter((plan): plan is StoredPlan => plan !== null) : [];
-    if (plans.length) return plans;
-
-    // Migrate the previous prototype version without discarding its saved plan.
-    const legacyValue = localStorage.getItem(legacyPlanStorageKey);
-    if (!legacyValue) return [];
-    const legacy: unknown = JSON.parse(legacyValue);
-    if (!isRecord(legacy) || typeof legacy.title !== 'string' || typeof legacy.objective !== 'string' ||
-      typeof legacy.reviewDate !== 'string' || !Array.isArray(legacy.strategies)) return [];
-    const now = new Date().toISOString();
-    const migrated: StoredPlan = {
-      id: 'migrated-' + now,
-      title: legacy.title,
-      objective: legacy.objective,
-      reviewDate: legacy.reviewDate,
-      strategies: legacy.strategies.filter((strategy): strategy is StoredPlan['strategies'][number] => isRecord(strategy) &&
-        typeof strategy.id === 'string' && typeof strategy.title === 'string' && typeof strategy.detail === 'string' &&
-        typeof strategy.responsible === 'string' && typeof strategy.cadence === 'string'),
-      status: legacy.status === 'active' ? 'approved' : legacy.status === 'pending-approval' ? 'pending-approval' : 'draft',
-      source: 'ai', createdAt: now, updatedAt: now, completedStrategies: [], reviews: [],
-      ...(typeof legacy.indicator === 'string' ? { indicator: legacy.indicator } : {}),
-      ...(typeof legacy.question === 'string' ? { question: legacy.question } : {}),
-      ...(typeof legacy.why === 'string' ? { why: legacy.why } : {}),
+    const readList = (key: string): StoredPlan[] => {
+      const stored = JSON.parse(localStorage.getItem(key) || '[]');
+      return Array.isArray(stored) ? stored.map(parseStoredPlan).filter((plan): plan is StoredPlan => plan !== null) : [];
     };
-    const valid = parseStoredPlan(migrated);
-    if (!valid) return [];
-    localStorage.setItem(plansStorageKey, JSON.stringify([valid]));
-    return [valid];
+    const combined = [...readList(plansStorageKey), ...readList(previousPlansStorageKey)];
+    const byId = new Map(combined.map((plan) => [plan.id, plan]));
+    const plans = [...byId.values()];
+    const approvedValue = localStorage.getItem(approvedPlanStorageKey) ?? localStorage.getItem(previousApprovedPlanStorageKey);
+    if (approvedValue) {
+      if (localStorage.getItem(approvedPlanStorageKey) === null) localStorage.setItem(approvedPlanStorageKey, approvedValue);
+      const legacy: unknown = JSON.parse(approvedValue);
+      if (isRecord(legacy) && typeof legacy.title === 'string' && typeof legacy.objective === 'string' &&
+        typeof legacy.reviewDate === 'string' && Array.isArray(legacy.strategies)) {
+        const now = new Date().toISOString();
+        const migrated: StoredPlan = {
+          id: typeof legacy.id === 'string' ? legacy.id : 'migrated-' + now,
+          title: legacy.title,
+          objective: legacy.objective,
+          reviewDate: legacy.reviewDate,
+          strategies: legacy.strategies.filter((strategy): strategy is StoredPlan['strategies'][number] => isRecord(strategy) &&
+            typeof strategy.id === 'string' && typeof strategy.title === 'string' && typeof strategy.detail === 'string' &&
+            typeof strategy.responsible === 'string' && typeof strategy.cadence === 'string'),
+          status: legacy.status === 'active' ? 'approved' : legacy.status === 'pending-approval' ? 'pending-approval' : 'draft',
+          source: 'ai', createdAt: typeof legacy.createdAt === 'string' ? legacy.createdAt : now, updatedAt: now, completedStrategies: [], reviews: [],
+          ...(typeof legacy.indicator === 'string' ? { indicator: legacy.indicator } : {}),
+          ...(typeof legacy.question === 'string' ? { question: legacy.question } : {}),
+          ...(typeof legacy.why === 'string' ? { why: legacy.why } : {}),
+        };
+        const valid = parseStoredPlan(migrated);
+        if (valid) byId.set(valid.id, valid);
+      }
+    }
+    const result = [...byId.values()];
+    if (result.length && (localStorage.getItem(plansStorageKey) === null || result.length !== readList(plansStorageKey).length)) {
+      localStorage.setItem(plansStorageKey, JSON.stringify(result));
+    }
+    return result;
   } catch {
     return [];
   }

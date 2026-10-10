@@ -4682,3 +4682,5 @@ body {
 .generated-options dl > div { padding-top: .65rem; border-top: 1px solid rgba(37, 36, 42, .14); }
 .generated-options dt { font-weight: 700; }
 .generated-options dd { margin: .25rem 0 0; }
+
+.demo-pill{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:#fff0ad;color:#55440b;font-size:12px;font-weight:700;line-height:1.4}

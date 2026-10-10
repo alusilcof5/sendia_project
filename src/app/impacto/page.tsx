@@ -5,8 +5,18 @@ import { AppShell } from '@/components/app-shell';
 
 type Role = 'docente' | 'familia' | 'profesional';
 type Entry = { id: string; role: Role; phase: 'before' | 'after'; answers: number[]; savedAt: string };
-const storageKey = 'miradas-pilot-entries-v1';
-const activeKey = 'miradas-pilot-active-v1';
+const storageKey = 'sendia-pilot-entries-v1';
+const activeKey = 'sendia-pilot-active-v1';
+const legacyStorageKey = 'miradas-pilot-entries-v1';
+const legacyActiveKey = 'miradas-pilot-active-v1';
+
+function readMigratedValue(key: string, legacyKey: string): string | null {
+  const current = localStorage.getItem(key);
+  if (current !== null) return current;
+  const legacy = localStorage.getItem(legacyKey);
+  if (legacy !== null) localStorage.setItem(key, legacy);
+  return legacy;
+}
 const measures = [
   'Puedo separar lo que observo de lo que interpreto.',
   'Sé qué información falta antes de decidir cómo actuar.',
@@ -25,9 +35,9 @@ export default function Impacto() {
 
   useEffect(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      const stored = JSON.parse(readMigratedValue(storageKey, legacyStorageKey) || '[]');
       if (Array.isArray(stored)) setEntries(stored.filter((item): item is Entry => item && typeof item.id === 'string' && (item.phase === 'before' || item.phase === 'after') && Array.isArray(item.answers)));
-      setActiveId(localStorage.getItem(activeKey) || '');
+      setActiveId(readMigratedValue(activeKey, legacyActiveKey) || '');
     } catch { setEntries([]); }
     setReady(true);
   }, []);
@@ -63,7 +73,7 @@ export default function Impacto() {
   };
   const clear = () => {
     if (!window.confirm('¿Borrar todas las respuestas de pilotaje guardadas en este navegador?')) return;
-    localStorage.removeItem(storageKey); localStorage.removeItem(activeKey); setEntries([]); setActiveId(''); setMessage('Respuestas borradas de este navegador.');
+    localStorage.removeItem(storageKey); localStorage.removeItem(activeKey); localStorage.removeItem(legacyStorageKey); localStorage.removeItem(legacyActiveKey); setEntries([]); setActiveId(''); setMessage('Respuestas borradas de este navegador.');
   };
 
   return <AppShell><div className="content pilot-page">
