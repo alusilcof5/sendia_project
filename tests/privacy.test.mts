@@ -26,3 +26,13 @@ test('detecta correo, teléfono y presentación de una persona', () => {
 test('construye un mensaje común para interfaz y endpoint', () => {
   assert.match(identifierMessage(['DNI/NIE']), /DNI\/NIE/);
 });
+
+import { teacherCases } from '../src/lib/teacher-cases.ts';
+
+test('los doce casos de docente son ficticios y no activan el filtro de identificadores', () => {
+  assert.equal(teacherCases.length, 12);
+  for (const item of teacherCases) {
+    assert.match(item.id, /^(?:mirada|caso)-\d{2}$/);
+    assert.equal(containsDirectIdentifier([item.title, item.observation, item.context, item.support].join(' ')), false, item.id);
+  }
+});

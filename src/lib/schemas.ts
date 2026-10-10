@@ -29,8 +29,8 @@ export function parseHypothesisReview(value: unknown): HypothesisReview {
 
 export type AdaptiveQuestion = { question: string; options: string[]; rationale: string };
 export type GeneratedHypothesis = { title: string; possibility: string; supporting: string[]; missing: string[]; alternatives: string[] };
-export type DiversificationOption = { title: string; representation: string; actionAndExpression: string; engagement: string };
-export type GeneratedGuidance = { summary: string; observations: string[]; interpretations: string[]; pending: string[]; hypotheses: GeneratedHypothesis[]; options: DiversificationOption[]; nextStep: NextStep; caution: string };
+export type DiversificationOption = { principle: 'representación' | 'acción y expresión' | 'implicación'; strategy: string; level: 'ordinaria' | 'requiere valoración del centro' };
+export type GeneratedGuidance = { summary: string; observations: string[]; interpretations: string[]; pending: string[]; hypotheses: GeneratedHypothesis[]; diversification: DiversificationOption[]; nextStep: NextStep; caution: string };
 
 function boundedString(value: unknown, min: number, max: number): value is string {
   return typeof value === 'string' && value.trim().length >= min && value.length <= max;
@@ -51,7 +51,7 @@ export function parseGeneratedGuidance(value: unknown): GeneratedGuidance {
   if (!isStringRecord(value) || !boundedString(value.summary, 8, 700) || !boundedString(value.caution, 8, 700) ||
     !boundedStringArray(value.observations, 0, 8, 500) || !boundedStringArray(value.interpretations, 0, 8, 500) || !boundedStringArray(value.pending, 0, 8, 500) ||
     !Array.isArray(value.hypotheses) || value.hypotheses.length < 1 || value.hypotheses.length > 3 ||
-    !Array.isArray(value.options) || value.options.length < 2 || value.options.length > 3) {
+    !Array.isArray(value.diversification) || value.diversification.length < 2 || value.diversification.length > 3) {
     throw new Error('La propuesta generada no tiene el formato esperado.');
   }
   const hypotheses = value.hypotheses.map((item) => {
@@ -63,9 +63,9 @@ export function parseGeneratedGuidance(value: unknown): GeneratedGuidance {
     const possibility = item.possibility.trim();
     return { title: item.title.trim(), possibility: /^podría ser que\b/i.test(possibility) ? possibility : `Podría ser que ${possibility.charAt(0).toLowerCase()}${possibility.slice(1)}`, supporting: item.supporting.map((entry) => entry.trim()), missing: item.missing.map((entry) => entry.trim()), alternatives: item.alternatives.map((entry) => entry.trim()) };
   });
-  const options = value.options.map((item) => {
-    if (!isStringRecord(item) || !boundedString(item.title, 3, 120) || !boundedString(item.representation, 8, 300) || !boundedString(item.actionAndExpression, 8, 300) || !boundedString(item.engagement, 8, 300)) throw new Error("Una opción de diversificación no tiene el formato esperado.");
-    return { title: item.title.trim(), representation: item.representation.trim(), actionAndExpression: item.actionAndExpression.trim(), engagement: item.engagement.trim() };
+  const diversification = value.diversification.map((item) => {
+    if (!isStringRecord(item) || !['representación', 'acción y expresión', 'implicación'].includes(String(item.principle)) || !boundedString(item.strategy, 8, 400) || !['ordinaria', 'requiere valoración del centro'].includes(String(item.level))) throw new Error('Una medida de diversificación no tiene el formato esperado.');
+    return { principle: item.principle as DiversificationOption['principle'], strategy: item.strategy.trim(), level: item.level as DiversificationOption['level'] };
   });
   const step = value.nextStep;
   const stepKeys = ['objective', 'question', 'why', 'action', 'responsible', 'indicator', 'reviewIn'] as const;
@@ -77,7 +77,7 @@ export function parseGeneratedGuidance(value: unknown): GeneratedGuidance {
   if (!pending.some((entry) => /familia|persona cuidadora/i.test(entry))) pending.push('Cuando proceda, recoger también la perspectiva de la familia.');
   return {
     summary: value.summary.trim(), observations: value.observations.map((entry) => entry.trim()), interpretations: value.interpretations.map((entry) => entry.trim()),
-    pending, hypotheses, options,
+    pending, hypotheses, diversification,
     nextStep: Object.fromEntries(stepKeys.map((key) => [key, (step[key] as string).trim()])) as unknown as NextStep,
     caution: value.caution.trim(),
   };
