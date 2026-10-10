@@ -1,57 +1,56 @@
 # SendIA
 
-Prototipo educativo para explorar situaciones, organizar observaciones y proponer pasos educativos revisables.
+Prototipo educativo para que familias y profesionales de la educación ordenen observaciones, exploren posibilidades y acuerden pasos pequeños y revisables. No diagnostica ni atribuye conductas automáticamente a las altas capacidades.
 
 ## Desarrollo
 
-Requiere Node.js 20.9 o posterior.
+Requiere Node.js 20.9 o posterior para la aplicación. Las pruebas y CI usan Node.js 22.
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-La aplicación usa Next.js App Router, TypeScript y Tailwind CSS. El caso Alex y sus ramas siguen siendo ficticios y predefinidos. El recorrido de situación propia puede usar IA generativa mediante la API `generateContent` de Gemini; la clave solo se lee en el servidor y la persona adulta confirma antes de enviar texto. No escribas nombres ni datos identificativos de menores. El cuestionario de pilotaje guarda respuestas anónimas solo en el navegador y exporta medias agregadas. SendIA no diagnostica ni atribuye conductas automáticamente a las altas capacidades.
-
 ## Módulos
 
-- `/`: bienvenida editorial de SendIA.
-- `/espacio`: Inicio con planes, tareas y accesos rápidos.
-- `/comprender`: la demo principal del caso ficticio de Alex; se reserva para Alex y el recorrido propio del espacio principal.
-- `/planes/plan-aula`: plan editable y seguimiento.
-- /beta/docentes/acceso y /beta/docentes/casos: beta docente independiente con diez ejemplos ficticios. Credenciales: docente@sendia.demo / sendia-demo. Es un prototipo local y no protege datos reales.
-- `/colaboracion` y `/impacto`: experiencias demostrativas sin datos reales.
-
-## Probar el caso
-
-En `/comprender`, selecciona **Explorar el caso de Alex**. Recorre las observaciones iniciales, compara hipótesis, elige una pregunta y prueba las tres ramas:
-
-1. Dominio diferente según la tarea.
-2. Aún faltan datos.
-3. Un dato cuestiona la hipótesis de falta de reto.
-
-Cada rama actualiza los estados de las hipótesis y propone un siguiente paso con responsable, indicador y momento de revisión. La decisión final es provisional y se acepta solo en la sesión de demostración.
+- `/`: página pública de bienvenida.
+- `/espacio`: inicio de demostración con datos ficticios.
+- `/comprender`: recorrido de Alex, un caso ficticio que se usa en la demo principal.
+- `/planes/plan-aula`: revisión y seguimiento de propuestas aprobadas.
+- `/beta/docentes/acceso` y `/beta/docentes/casos`: área de demostración docente separada, con doce casos ficticios. Las credenciales visibles en la pantalla son solo una simulación de acceso; no constituyen autenticación ni protegen datos reales.
+- `/colaboracion`: prototipo de colaboración.
+- `/impacto`: cuestionario exploratorio de pilotaje, datos locales y exportaciones CSV.
 
 ## IA generativa
 
-Copia `.env.example` a `.env.local` y define `GEMINI_API_KEY` en el servidor. Opcionalmente define `GEMINI_MODEL`; por defecto se usa `gemini-3.5-flash-lite`, un modelo de baja latencia adecuado para preguntas y propuestas breves. No expongas la clave con el prefijo `NEXT_PUBLIC_`. Si antes usabas OpenAI, configura Gemini en el entorno y elimina la variable antigua cuando confirmes que ya no la necesitas. Sin clave, la demo de Alex sigue disponible y el modo propio informa que la generación no está configurada.
+Copia `.env.example` a `.env.local` y define `GEMINI_API_KEY` en el servidor. Puedes configurar `GEMINI_MODEL`; el valor por defecto es `gemini-3.5-flash-lite`. Verifica que `GEMINI_MODEL` existe en tu cuenta; si no, el endpoint devolverá un error 404 controlado. No expongas la clave con el prefijo `NEXT_PUBLIC_`.
 
-En el recorrido propio, la IA genera hasta tres preguntas adaptativas según las respuestas previas y después organiza observaciones, información pendiente, hipótesis abiertas y un paso revisable. La persona adulta puede editar los campos, aprobar la propuesta y abrirla en Mis planes. El endpoint de Gemini aplica límites de longitud y frecuencia, solicita salida JSON estructurada, la valida con esquemas tipados y no persiste el texto en SendIA. El texto sí se transmite al proveedor al confirmar el aviso; esta integración no debe usarse con datos identificativos de menores.
+En `/comprender`, la persona adulta describe una situación, responde preguntas adaptativas y revisa una orientación estructurada. La propuesta distingue hechos, interpretaciones e información pendiente; propone hipótesis prudentes y diversificación según los principios del DUA. La persona revisa y aprueba cualquier plan antes de guardarlo en el almacenamiento local del navegador. El servidor no guarda el texto, pero este sí se transmite al proveedor de IA tras el consentimiento.
 
-## Instrumento de pilotaje
+La ruta aplica límites de tamaño y frecuencia. `SENDIA_MAX_AI_REQUESTS_PER_HOUR` configura el máximo global por hora (120 por defecto). Los contadores de solicitudes son en memoria: para producción con varias instancias se necesita un almacén externo, como Redis/Upstash, y autenticación. No se implementan aquí.
 
-En `/impacto`, una persona adulta puede registrar una línea inicial, explorar SendIA y completar un seguimiento. El navegador guarda respuestas numéricas sin nombres ni datos de estudiantes y muestra medias solo para pares completos. La exportación CSV contiene exclusivamente medias y número de respuestas emparejadas. El instrumento es exploratorio, no está validado, y no prueba que SendIA cause cambios. Los resultados solo existen después de realizar un pilotaje real; no se incluyen métricas ficticias.
+## Privacidad y uso responsable
 
-La compilación de producción se comprueba con:
+El filtro de datos identificativos es heurístico. Detecta algunos correos, teléfonos, DNI/NIE, centros educativos y nombres compuestos, pero no detecta nombres de pila aislados ni todos los datos identificativos. No anonimiza el texto; si detecta un posible identificador, bloquea el envío. Las demostraciones usan exclusivamente situaciones ficticias.
+
+No uses SendIA con datos reales de menores hasta contar con una base legal, un contrato de encargado de tratamiento y una evaluación de impacto en protección de datos. No es un producto clínico ni sustituye al equipo de orientación. Las respuestas generadas requieren revisión humana.
+
+## Pilotaje
+
+En `/impacto`, las respuestas se guardan localmente en el navegador. Cada participante puede exportar sus respuestas anónimas, que contienen perfil, fase, valores, un identificador aleatorio de emparejamiento y solo el mes. Para evaluar un grupo, cada participante exporta su archivo y la persona coordinadora reúne los archivos. Las medias se muestran por perfil, sin combinar docentes, familias y profesionales.
+
+El instrumento es exploratorio y no está validado. Mide percepción de utilidad del marco, no cambios en el alumnado ni efectos causales. No hay resultados ficticios cargados en la herramienta.
+
+## Comprobaciones
 
 ```bash
+npx tsc --noEmit
+npm test
 npm run build
 ```
-# sendia_project
 
+La integración continua ejecuta estas comprobaciones en cada push y pull request con Node.js 22.
 
-## Límites de la API de IA
+## Licencia
 
-La ruta de generación limita solicitudes por cliente y el máximo global con `SENDIA_MAX_AI_REQUESTS_PER_HOUR` (por defecto, 120 por hora). Estos contadores viven en memoria; en despliegues con varias instancias hacen falta un almacén compartido como Redis/Upstash y autenticación. No se implementan aquí.
-
-Configura `GEMINI_API_KEY` en el servidor y, de forma opcional, `GEMINI_MODEL`. Verifica que `GEMINI_MODEL` existe en tu cuenta; si no, el endpoint devolverá un error 404 controlado.
+El repositorio aún no declara una licencia. La persona propietaria debe elegirla antes de añadir un archivo `LICENSE`.
