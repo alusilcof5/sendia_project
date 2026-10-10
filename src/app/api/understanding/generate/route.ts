@@ -58,6 +58,8 @@ function containsDisallowedGeneratedContent(value: unknown): boolean {
 }
 
 export async function POST(request: Request) {
+  const contentLength = Number(request.headers.get('content-length') || 0);
+  if (Number.isFinite(contentLength) && contentLength > 20_000) return NextResponse.json({ error: 'La solicitud supera el tamaño máximo permitido (20 KB).' }, { status: 413 });
   let body: unknown;
   try { body = await request.json(); } catch { return NextResponse.json({ error: 'Solicitud no válida.' }, { status: 400 }); }
   if (!isStringRecord(body) || body.adultConsent !== true || !['question', 'guidance'].includes(String(body.action)) || !situationIds.includes(body.situation as Situation) || !boundedText(body.observation, 1200) || (body.context !== undefined && typeof body.context !== 'string') || (body.support !== undefined && typeof body.support !== 'string') || (body.answer !== undefined && typeof body.answer !== 'string') || (body.question !== undefined && typeof body.question !== 'string') || tooLong(body.context, 1200) || tooLong(body.support, 1200) || tooLong(body.answer, 600) || tooLong(body.question, 600) || !validHistory(body.history)) return NextResponse.json({ error: 'Revisa el consentimiento, la situación y los límites de texto.' }, { status: 400 });
@@ -66,12 +68,19 @@ export async function POST(request: Request) {
   if (identifiers.length) return NextResponse.json({ error: identifierMessage(identifiers.map(({ kind }) => kind)) }, { status: 400 });
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return NextResponse.json({ error: 'La IA generativa aún no está configurada. Añade GEMINI_API_KEY en el entorno del servidor.' }, { status: 503 });
-  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'local';
+  const forwarded = request.headers.get('x-forwarded-for')?.split(',').map((item) => item.trim()).filter(Boolean).at(-1);
+  const client = request.headers.get('x-real-ip')?.trim() || forwarded || 'local';
   const now = Date.now();
   for (const [key, entry] of rateLimits) if (entry.until < now) rateLimits.delete(key);
-  const limit = rateLimits.get(forwarded);
-  if (limit && limit.count >= 8) return NextResponse.json({ error: 'Se alcanzó el límite temporal de consultas. Inténtalo más tarde.' }, { status: 429 });
-  rateLimits.set(forwarded, { count: (limit?.count ?? 0) + 1, until: limit?.until ?? now + 10 * 60_000 });
+  const clientLimit = rateLimits.get(client);
+  if (clientLimit && clientLimit.count >= 8) return NextResponse.json({ error: 'Se alcanzó el límite temporal de consultas. Inténtalo más tarde.' }, { status: 429 });
+  if (!clientLimit && rateLimits.size >= 5_000) return NextResponse.json({ error: 'El servicio alcanzó temporalmente su capacidad. Inténtalo más tarde.' }, { status: 429 });
+  const configuredGlobalLimit = Number.parseInt(process.env.SENDIA_MAX_AI_REQUESTS_PER_HOUR || '120', 10);
+  const globalLimit = Number.isFinite(configuredGlobalLimit) && configuredGlobalLimit > 0 ? configuredGlobalLimit : 120;
+  if (now - globalWindowStart >= 60 * 60_000) { globalWindowStart = now; globalRequests = 0; }
+  if (globalRequests >= globalLimit) return NextResponse.json({ error: 'SendIA alcanzó el límite global de consultas de IA de esta hora. Inténtalo más tarde.' }, { status: 429 });
+  rateLimits.set(client, { count: (clientLimit?.count ?? 0) + 1, until: clientLimit?.until ?? now + 10 * 60_000 });
+  globalRequests += 1;
 
   const input = { situation: situationNames[body.situation as Situation], observation: body.observation, context: typeof body.context === 'string' ? body.context : '', strengths: typeof body.support === 'string' ? body.support : '', question: typeof body.question === 'string' ? body.question : '', answer: typeof body.answer === 'string' ? body.answer : '', history: Array.isArray(body.history) ? body.history as { question: string; answer: string }[] : [] };
   const action = body.action as 'question' | 'guidance';
@@ -93,7 +102,7 @@ Propón primero medidas ordinarias de aula. Incluye 2 o 3 opciones para la MISMA
         systemInstruction: { parts: [{ text: instructions }] },
         contents: [{ role: 'user', parts: [{ text: userInput }] }],
         generationConfig: {
-          maxOutputTokens: 1400,
+          maxOutputTokens: 2048,
           thinkingConfig: { thinkingLevel: 'low' },
           responseMimeType: 'application/json',
           responseSchema: toGeminiSchema(schema),
@@ -120,6 +129,7 @@ Propón primero medidas ordinarias de aula. Incluye 2 o 3 opciones para la MISMA
     const payload: unknown = await response.json();
     if (!isStringRecord(payload) || !Array.isArray(payload.candidates)) throw new Error('Respuesta externa no válida.');
     const candidate: unknown = payload.candidates.find((item) => isStringRecord(item) && isStringRecord(item.content) && Array.isArray(item.content.parts));
+    if (isStringRecord(candidate) && candidate.finishReason === 'MAX_TOKENS') return NextResponse.json({ error: 'La respuesta de la IA se cortó. Inténtalo de nuevo.' }, { status: 502 });
     const content: unknown = isStringRecord(candidate) ? candidate.content : undefined;
     const parts: unknown[] = isStringRecord(content) && Array.isArray(content.parts) ? content.parts : [];
     const text: unknown = parts.find((part) => isStringRecord(part) && typeof part.text === 'string');
@@ -138,3 +148,5 @@ Propón primero medidas ordinarias de aula. Incluye 2 o 3 opciones para la MISMA
 
 type RateEntry = { count: number; until: number };
 const rateLimits = new Map<string, RateEntry>();
+let globalWindowStart = Date.now();
+let globalRequests = 0;

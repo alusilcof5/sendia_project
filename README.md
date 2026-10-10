@@ -48,3 +48,10 @@ La compilación de producción se comprueba con:
 npm run build
 ```
 # sendia_project
+
+
+## Límites de la API de IA
+
+La ruta de generación limita solicitudes por cliente y el máximo global con `SENDIA_MAX_AI_REQUESTS_PER_HOUR` (por defecto, 120 por hora). Estos contadores viven en memoria; en despliegues con varias instancias hacen falta un almacén compartido como Redis/Upstash y autenticación. No se implementan aquí.
+
+Configura `GEMINI_API_KEY` en el servidor y, de forma opcional, `GEMINI_MODEL`. Verifica que `GEMINI_MODEL` existe en tu cuenta; si no, el endpoint devolverá un error 404 controlado.
