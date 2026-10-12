@@ -1,4 +1,5 @@
-import Link from 'next/link';
-import { AppShell } from '@/components/app-shell';
+import { CollaborationHub } from '@/components/collaboration-hub';
 
-export default function Colaboracion() { return <AppShell><div className="content"><div className="eyebrow">ESPACIO PERSONAL</div><h1 className="page-title serif">Colaboración</h1><p className="subtitle">Decide qué compartir, con quién y durante cuánto tiempo.</p><section className="panel section-space"><div className="panel-heading"><h2>Planes compartidos</h2><span className="demo-pill">Datos ficticios</span></div><div className="plan-row"><span className="plan-symbol">♧</span><span><div className="plan-title">Más caminos para aprender</div><div className="plan-meta">Compartido con el equipo docente · acceso de lectura</div></span><span className="status">Activo</span></div><div className="empty-state">Los permisos de colaboración son una simulación en este prototipo. Aún no se comparten datos reales.</div><div style={{marginTop:16}}><Link href="/planes/plan-aula" className="button button-secondary button-small">Revisar permisos del plan →</Link></div></section></div></AppShell>; }
+export default function ColaboracionPage() {
+  return <CollaborationHub />;
+}

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { AppShell } from '@/components/app-shell';
+import { formatMonth, locale } from '@/lib/i18n/es-419';
 
 type Role = 'docente' | 'familia' | 'profesional';
 type Entry = { id: string; role: Role; phase: 'before' | 'after'; answers: number[]; savedAt: string };
@@ -32,6 +33,7 @@ export default function Impacto() {
   const [consent, setConsent] = useState(false);
   const [message, setMessage] = useState('');
   const [ready, setReady] = useState(false);
+  const [waitingForExplore, setWaitingForExplore] = useState(false);
 
   useEffect(() => {
     try {
@@ -56,14 +58,15 @@ export default function Impacto() {
     });
     return { ...profile, pairs: profilePairs, averages };
   });
-  const phase = activeId ? 'after' : 'before';
+  const phase = activeId && !waitingForExplore ? 'after' : 'before';
+  const pilotStep = paired.length > 0 && !activeId ? 3 : waitingForExplore ? 1 : activeId ? 2 : 0;
   const save = () => {
     if (!consent || answers.some((value) => value < 1 || value > 5) || !ready) return;
     const id = activeId || crypto.randomUUID();
     const currentRole = activeId ? entries.find((item) => item.id === activeId && item.phase === 'before')?.role || role : role;
     const next = [...entries, { id, role: currentRole, phase, answers, savedAt: new Date().toISOString() } satisfies Entry];
     setEntries(next); localStorage.setItem(storageKey, JSON.stringify(next));
-    if (phase === 'before') { setActiveId(id); localStorage.setItem(activeKey, id); setMessage('Línea inicial guardada en este navegador. Explora SendIA y vuelve para completar el seguimiento.'); }
+    if (phase === 'before') { setActiveId(id); setWaitingForExplore(true); localStorage.setItem(activeKey, id); setMessage('Punto de partida guardado. Explora Comprender y vuelve para completar el seguimiento.'); }
     else { setActiveId(''); localStorage.removeItem(activeKey); setMessage('Seguimiento guardado. Se ha actualizado el resumen de respuestas emparejadas.'); }
     setAnswers([0, 0, 0]); setConsent(false);
   };
@@ -77,39 +80,49 @@ export default function Impacto() {
     const rows = [['Perfil', 'Indicador', 'n', 'Antes (media 1-5)', 'Después (media 1-5)', 'Cambio medio']];
     summaries.forEach((summary) => measures.forEach((measure, index) => {
       const value = summary.averages[index];
-      if (value) rows.push([summary.label, measure, String(summary.pairs.length), value.before.toFixed(2), value.after.toFixed(2), value.delta.toFixed(2)]);
+      if (value) rows.push([summary.label, measure, new Intl.NumberFormat(locale).format(summary.pairs.length), value.before.toFixed(2), value.after.toFixed(2), value.delta.toFixed(2)]);
     }));
     downloadCsv(rows, 'sendia-pilotaje-agregado-por-perfil.csv');
   };
   const exportResponses = () => {
     if (!entries.length) return;
     const rows = [['Perfil', 'Fase', ...measures.map((_, index) => `Indicador ${index + 1} (1-5)`), 'Identificador aleatorio de emparejamiento', 'Mes']];
-    entries.forEach((entry) => rows.push([entry.role, entry.phase === 'before' ? 'antes' : 'después', ...entry.answers.map(String), entry.id, /^\d{4}-\d{2}/.test(entry.savedAt) ? entry.savedAt.slice(0, 7) : '']));
+    entries.forEach((entry) => rows.push([entry.role, entry.phase === 'before' ? 'antes' : 'después', ...entry.answers.map((value) => new Intl.NumberFormat(locale).format(value)), entry.id, /^\d{4}-\d{2}/.test(entry.savedAt) ? formatMonth(entry.savedAt) : '']));
     downloadCsv(rows, 'sendia-respuestas-anonimas.csv');
   };
   const clear = () => {
     if (!window.confirm('¿Borrar todas las respuestas de pilotaje guardadas en este navegador?')) return;
-    localStorage.removeItem(storageKey); localStorage.removeItem(activeKey); localStorage.removeItem(legacyStorageKey); localStorage.removeItem(legacyActiveKey); setEntries([]); setActiveId(''); setMessage('Respuestas borradas de este navegador.');
+    localStorage.removeItem(storageKey); localStorage.removeItem(activeKey); localStorage.removeItem(legacyStorageKey); localStorage.removeItem(legacyActiveKey); setEntries([]); setActiveId(''); setWaitingForExplore(false); setMessage('Respuestas borradas de este navegador.');
   };
 
   return <AppShell><div className="content pilot-page">
-    <div className="eyebrow">PILOTAJE · MEDIDAS AUTODECLARADAS</div><h1 className="page-title serif">Impacto</h1><p className="subtitle">Compara cómo se sienten docentes y familias antes y después de explorar SendIA. Una señal para aprender, no una prueba de eficacia.</p>
-    <div className="pilot-banner"><strong>Instrumento de pilotaje en construcción</strong><span>No hay resultados reales todavía. Este cuestionario no está validado y sus resultados no demuestran causalidad. Recoge primero una línea inicial, explora la herramienta y vuelve para responder el seguimiento.</span><strong>Estos ítems miden percepción de utilidad del marco; no miden cambios en el alumnado.</strong></div>
+    <section className="pilot-hero">
+      <div className="pilot-hero-copy"><span className="case-label">SEGUIMIENTO · VOCES ADULTAS</span><h1>Mirar de nuevo<br/><em>también es avanzar.</em></h1><p>Este espacio queda preparado para acompañar el pilotaje de SendIA. Responde tres preguntas, explora la herramienta y vuelve después para comparar tu percepción.</p><div className="pilot-hero-tags"><span>3 preguntas</span><span>2 momentos</span><span>En este navegador</span></div></div>
+      <div className="pilot-hero-art" aria-hidden="true"><span className="pilot-art-orbit"/><span className="pilot-art-core">↗</span><span className="pilot-art-note pilot-art-before">ANTES</span><span className="pilot-art-note pilot-art-after">DESPUÉS</span><span className="pilot-art-caption">Observar<br/>· explorar · revisar</span></div>
+    </section>
+    <div className="pilot-banner"><strong>¿Qué recoge este seguimiento?</strong><span>Tu percepción sobre cómo separas observaciones de interpretaciones y eliges qué hacer. No evalúa al alumnado ni demuestra que SendIA cause cambios. Todavía no hay resultados hasta que las personas participantes completen ambas partes.</span></div>
+    <section className="pilot-howto" aria-label="Progreso del pilotaje">
+      <div className={pilotStep > 0 ? 'is-done' : pilotStep === 0 ? 'is-current' : ''} aria-current={pilotStep === 0 ? 'step' : undefined}><span>{pilotStep > 0 ? '✓' : '01'}</span><p><strong>{pilotStep > 0 ? 'Tu punto de partida' : 'Primero, responde'}</strong><br/>Guarda cómo ves la situación hoy.</p></div>
+      <div className={pilotStep > 1 ? 'is-done' : pilotStep === 1 ? 'is-current' : ''} aria-current={pilotStep === 1 ? 'step' : undefined}><span>{pilotStep > 1 ? '✓' : '02'}</span><p><strong>{pilotStep > 1 ? 'Exploración completada' : 'Después, explora'}</strong><br/>Prueba Comprender con el ejemplo ficticio.</p></div>
+      <div className={pilotStep === 3 ? 'is-done' : pilotStep === 2 ? 'is-current' : ''} aria-current={pilotStep === 2 ? 'step' : undefined}><span>{pilotStep === 3 ? '✓' : '03'}</span><p><strong>{pilotStep === 3 ? 'Comparación lista' : 'Por último, vuelve'}</strong><br/>Completa el seguimiento aquí mismo.</p></div>
+    </section>
     <div className="pilot-grid section-space">
-      <section className="panel pilot-form"><div className="panel-heading"><h2>{phase === 'before' ? '01 · Antes de explorar' : '02 · Después de explorar'}</h2><span className={'status ' + (phase === 'before' ? 'draft' : '')}>{phase === 'before' ? 'Línea inicial' : 'Seguimiento'}</span></div>
+      <section className="panel pilot-form"><div className="pilot-card-heading"><div><span className="eyebrow">{waitingForExplore ? 'SIGUIENTE PASO' : phase === 'before' ? 'MOMENTO 01 · ANTES' : 'MOMENTO 02 · DESPUÉS'}</span><h2>{waitingForExplore ? 'Ahora prueba SendIA.' : phase === 'before' ? '¿Cómo lo ves hoy?' : '¿Qué ves ahora?'}</h2></div><span className="pilot-step-badge">{waitingForExplore ? '2 / 3' : phase === 'before' ? '1 / 3' : '3 / 3'}</span></div>
+        {waitingForExplore ? <div className="pilot-next-step"><strong>Tu punto de partida ya está guardado.</strong><p>Abre «Comprender», explora el caso ficticio de Alex y vuelve aquí para responder las mismas preguntas.</p><a className="button button-primary" href="/comprender?modo=demo" onClick={() => { setWaitingForExplore(false); setMessage(''); }}>Explorar el caso ficticio <span>→</span></a></div> : <>
         {phase === 'before' && <label className="pilot-role">Tu perfil<select value={role} onChange={(event) => setRole(event.target.value as Role)}>{roles.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>}
-        <p className="pilot-instructions">Valora tu experiencia actual del 1 (todavía no) al 5 (sí, claramente). No respondas sobre un estudiante concreto.</p>
+        <p className="pilot-instructions">Marca del 1 (todavía no) al 5 (sí, claramente). Piensa en tu experiencia, no en un estudiante concreto. Tus respuestas se guardan solo en este navegador.</p>
         <div className="pilot-measures">{measures.map((measure, index) => <fieldset className="pilot-measure" key={measure}><legend>{measure}</legend><div className="pilot-scale" role="radiogroup" aria-label={measure}>{[1, 2, 3, 4, 5].map((value) => <label key={value} className={answers[index] === value ? 'picked' : ''}><input type="radio" name={'measure-' + index} value={value} checked={answers[index] === value} onChange={() => setAnswers((current) => current.map((item, i) => i === index ? value : item))}/><span>{value}</span></label>)}</div><div className="pilot-scale-labels"><span>Todavía no</span><span>Claramente</span></div></fieldset>)}</div>
-        <label className="pilot-consent"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)}/><span>Soy una persona adulta y acepto guardar estas respuestas anónimas localmente para el pilotaje. No introduciré datos de menores.</span></label>
-        <button className="button button-primary" disabled={!ready || !consent || answers.some((value) => value === 0)} onClick={save}>{phase === 'before' ? 'Guardar línea inicial' : 'Guardar seguimiento'}</button>
+        <label className="pilot-consent"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)}/><span>Soy una persona adulta y acepto guardar mis respuestas en este navegador. No incluiré datos de menores. Si las exporto, el archivo llevará un código aleatorio para emparejar las dos respuestas.</span></label>
+        <button className="button button-primary" disabled={!ready || !consent || answers.some((value) => value === 0)} onClick={save}>{phase === 'before' ? 'Guardar y empezar a explorar' : 'Guardar seguimiento'}</button>
         {message && <p className="pilot-message" role="status">{message}</p>}
+        </>}
       </section>
-      <section className="panel pilot-results"><div className="eyebrow">LECTURA AGREGADA</div><h2 className="serif">Cambios que podemos observar.</h2><p className="muted">Solo se comparan cuestionarios iniciales y de seguimiento emparejados en este navegador.</p><div className="pilot-count"><strong>{ready ? paired.length : '—'}</strong><span>pares completos<br/>de respuestas</span></div>
-        <div className="pilot-aggregate">{summaries.map((summary) => <section key={summary.id}><h3>{summary.label} · n = {summary.pairs.length}</h3>{summary.pairs.length ? measures.map((measure, index) => <article key={measure}><h4>{measure}</h4>{summary.averages[index] && <div><span>Antes <strong>{summary.averages[index]!.before.toFixed(1)}</strong></span><span>Después <strong>{summary.averages[index]!.after.toFixed(1)}</strong></span><span>Cambio <strong>{summary.averages[index]!.delta > 0 ? '+' : ''}{summary.averages[index]!.delta.toFixed(1)}</strong></span></div>}</article>) : <p>Aún no hay pares completos de este perfil.</p>}</section>)}</div>
-        <div className="pilot-actions"><button className="button button-secondary button-small" onClick={exportAggregate} disabled={!paired.length}>Descargar resumen agregado CSV</button><button className="button button-secondary button-small" onClick={exportResponses} disabled={!entries.length}>Exportar mis respuestas (anónimas)</button><button className="case-back-link" onClick={clear} disabled={!entries.length}>Borrar datos locales</button></div>
-        <p className="pilot-privacy">Las respuestas se quedan en este navegador. El archivo individual no contiene nombres ni fechas exactas; incluye el mes y un identificador aleatorio para emparejar antes/después. Para evaluar a un grupo, cada participante exporta su archivo y quien coordina los reúne.</p>
+      <section className="panel pilot-results"><div className="eyebrow">RESUMEN PERSONAL</div><h2>Lo que podemos observar.</h2><p className="muted">Las respuestas se comparan solo cuando están completas y emparejadas en este navegador.</p>
+      {!paired.length ? <div className="pilot-empty"><span className="pilot-empty-mark" aria-hidden="true">↗</span><div><strong>{waitingForExplore ? 'Tu punto de partida ya está guardado.' : 'Aún no hay una comparación.'}</strong><p>{waitingForExplore ? 'Explora Comprender y vuelve para responder el seguimiento.' : 'Al completar los dos momentos, verás aquí un resumen de tus respuestas.'}</p></div></div> : <><div className="pilot-count"><strong>{new Intl.NumberFormat(locale).format(paired.length)}</strong><span>{paired.length === 1 ? 'comparación completa' : 'comparaciones completas'}</span></div><div className="pilot-aggregate">{summaries.filter((summary) => summary.pairs.length > 0).map((summary) => <section key={summary.id}><h3>{summary.label} · {new Intl.NumberFormat(locale).format(summary.pairs.length)} {summary.pairs.length === 1 ? 'par' : 'pares'}</h3>{measures.map((measure, index) => <article key={measure}><h4>{measure}</h4>{summary.averages[index] && <div><span>Antes <strong>{summary.averages[index]!.before.toLocaleString(locale, { maximumFractionDigits: 1 })}</strong></span><span>Después <strong>{summary.averages[index]!.after.toLocaleString(locale, { maximumFractionDigits: 1 })}</strong></span><span>Cambio <strong>{summary.averages[index]!.delta > 0 ? '+' : ''}{summary.averages[index]!.delta.toLocaleString(locale, { maximumFractionDigits: 1 })}</strong></span></div>}</article>)}</section>)}</div></>}
+        {entries.length > 0 && <div className="pilot-actions">{paired.length > 0 && <button className="button button-secondary button-small" onClick={exportAggregate}>Descargar este resumen</button>}<button className="button button-secondary button-small" onClick={exportResponses}>Descargar mis respuestas</button><button className="case-back-link" onClick={clear}>Borrar mis respuestas</button></div>}
+        {entries.length > 0 && <details className="pilot-privacy"><summary>¿Dónde se guardan y cómo compartirlas?</summary><p>Se guardan solo en este navegador. SendIA no reúne respuestas de varias personas. El archivo exportado incluye un código aleatorio para relacionar el antes y el después, además del mes. Para un grupo, quien coordina debe reunir los archivos fuera de SendIA.</p></details>}
       </section>
     </div>
-    <section className="pilot-method"><div><span className="eyebrow">PROTOCOLO BREVE</span><h2>Un piloto pequeño, contado con honestidad.</h2></div><ol><li>Invitar a personas adultas docentes o familiares; no recopilar información identificable de menores.</li><li>Responder la línea inicial y recorrer Comprender con una situación ficticia o anonimizada.</li><li>Completar el seguimiento y exportar solo medias agregadas.</li><li>Informar número de pares, perfiles, contexto y limitaciones; no atribuir el cambio a SendIA sin un diseño que lo permita.</li></ol></section>
+    <details className="pilot-method"><summary>Cómo interpretar estos resultados</summary><p>Este cuestionario recoge percepciones de personas adultas. Es un instrumento de pilotaje, no validado; los resultados no prueban que SendIA haya causado un cambio. No mide resultados de estudiantes.</p></details>
   </div></AppShell>;
 }

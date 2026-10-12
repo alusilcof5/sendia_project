@@ -102,3 +102,12 @@ export function makeStoredPlan(plan: NewPlan): StoredPlan {
   const now = new Date().toISOString();
   return { ...plan, id: plan.id || crypto.randomUUID(), createdAt: plan.createdAt || now, updatedAt: now, completedStrategies: plan.completedStrategies ?? [], reviews: plan.reviews ?? [] };
 }
+
+export function deriveReviewDate(reviewIn: string, now = new Date()): string {
+  const normalized = reviewIn.toLowerCase();
+  const weeks = normalized.match(/(?:en|tras|después de)\s+(\d+)\s+semanas?/);
+  const days = normalized.match(/(?:en|tras|después de)\s+(\d+)\s+días?/);
+  const offsetDays = weeks ? Number(weeks[1]) * 7 : days ? Number(days[1]) : 7;
+  const review = new Date(now.getFullYear(), now.getMonth(), now.getDate() + Math.min(Math.max(offsetDays, 1), 90));
+  return `${review.getFullYear()}-${String(review.getMonth() + 1).padStart(2, '0')}-${String(review.getDate()).padStart(2, '0')}`;
+}

@@ -1,4 +1,4 @@
-export type Situation = 'participation' | 'frustration' | 'relationships' | 'challenge';
+export type Situation = 'participation' | 'frustration' | 'relationships' | 'challenge' | 'asynchrony' | 'perfectionism' | 'motivation' | 'transitions';
 export type Observation = { id: string; text: string; category: 'observation' | 'interpretation' | 'pending' };
 export type EvidenceStatus = 'compatible' | 'insufficient' | 'contradictory' | 'unsupported';
 export type CaseObservation = { id: string; text: string; source: 'initial' | 'new'; kind: 'observation' | 'interpretation' | 'unknown' };
@@ -29,8 +29,13 @@ export function parseHypothesisReview(value: unknown): HypothesisReview {
 
 export type AdaptiveQuestion = { question: string; options: string[]; rationale: string };
 export type GeneratedHypothesis = { title: string; possibility: string; supporting: string[]; missing: string[]; alternatives: string[] };
-export type DiversificationOption = { principle: 'representación' | 'acción y expresión' | 'implicación'; strategy: string; level: 'ordinaria' | 'requiere valoración del centro' };
+export type DiversificationOption = { principle: 'representación' | 'acción y expresión' | 'implicación'; strategy: string; level: 'ordinaria' | 'requiere valoración de la institución educativa' };
 export type GeneratedGuidance = { summary: string; observations: string[]; interpretations: string[]; pending: string[]; hypotheses: GeneratedHypothesis[]; diversification: DiversificationOption[]; nextStep: NextStep; caution: string };
+export type GeneratedOutputs = {
+  teacher: { goal: string; variants: { level: 'apoyo' | 'base' | 'ampliación'; task: string; materials: string; observation: string; withoutTechnology: boolean }[] };
+  family: { guide: string; questions: [string, string, string]; homeActivity: string; avoidConclusion: string };
+  school: { situation: string; observations: string[]; openQuestions: string[]; indicator: string; reviewDate: string; consultWhen: string };
+};
 
 function boundedString(value: unknown, min: number, max: number): value is string {
   return typeof value === 'string' && value.trim().length >= min && value.length <= max;
@@ -51,7 +56,7 @@ export function parseGeneratedGuidance(value: unknown): GeneratedGuidance {
   if (!isStringRecord(value) || !boundedString(value.summary, 8, 700) || !boundedString(value.caution, 8, 700) ||
     !boundedStringArray(value.observations, 0, 8, 500) || !boundedStringArray(value.interpretations, 0, 8, 500) || !boundedStringArray(value.pending, 0, 8, 500) ||
     !Array.isArray(value.hypotheses) || value.hypotheses.length < 1 || value.hypotheses.length > 3 ||
-    !Array.isArray(value.diversification) || value.diversification.length < 2 || value.diversification.length > 3) {
+    !Array.isArray(value.diversification) || value.diversification.length !== 3) {
     throw new Error('La propuesta generada no tiene el formato esperado.');
   }
   const hypotheses = value.hypotheses.map((item) => {
@@ -64,9 +69,10 @@ export function parseGeneratedGuidance(value: unknown): GeneratedGuidance {
     return { title: item.title.trim(), possibility: /^podría ser que\b/i.test(possibility) ? possibility : `Podría ser que ${possibility.charAt(0).toLowerCase()}${possibility.slice(1)}`, supporting: item.supporting.map((entry) => entry.trim()), missing: item.missing.map((entry) => entry.trim()), alternatives: item.alternatives.map((entry) => entry.trim()) };
   });
   const diversification = value.diversification.map((item) => {
-    if (!isStringRecord(item) || !['representación', 'acción y expresión', 'implicación'].includes(String(item.principle)) || !boundedString(item.strategy, 8, 400) || !['ordinaria', 'requiere valoración del centro'].includes(String(item.level))) throw new Error('Una medida de diversificación no tiene el formato esperado.');
+    if (!isStringRecord(item) || !['representación', 'acción y expresión', 'implicación'].includes(String(item.principle)) || !boundedString(item.strategy, 8, 400) || item.level !== 'ordinaria') throw new Error('Una medida de diversificación no tiene el formato esperado.');
     return { principle: item.principle as DiversificationOption['principle'], strategy: item.strategy.trim(), level: item.level as DiversificationOption['level'] };
   });
+  if (new Set(diversification.map((item) => item.principle)).size !== 3) throw new Error('La propuesta debe cubrir los tres principios de diversificación.');
   const step = value.nextStep;
   const stepKeys = ['objective', 'question', 'why', 'action', 'responsible', 'indicator', 'reviewIn'] as const;
   if (!isStringRecord(step) || !stepKeys.every((key) => boundedString(step[key], 1, 500))) {
@@ -81,4 +87,21 @@ export function parseGeneratedGuidance(value: unknown): GeneratedGuidance {
     nextStep: Object.fromEntries(stepKeys.map((key) => [key, (step[key] as string).trim()])) as unknown as NextStep,
     caution: value.caution.trim(),
   };
+}
+
+export function parseGeneratedOutputs(value: unknown): GeneratedOutputs {
+  if (!isStringRecord(value) || !isStringRecord(value.teacher) || !isStringRecord(value.family) || !isStringRecord(value.school)) throw new Error('Los materiales no tienen el formato esperado.');
+  const teacher = value.teacher;
+  if (!boundedString(teacher.goal, 3, 500) || !Array.isArray(teacher.variants) || teacher.variants.length !== 3) throw new Error('La propuesta para el docente no tiene el formato esperado.');
+  const expectedLevels = ['apoyo', 'base', 'ampliación'];
+  const variants = teacher.variants.map((item, index) => {
+    if (!isStringRecord(item) || item.level !== expectedLevels[index] || !boundedString(item.task, 5, 1200) || !boundedString(item.materials, 3, 500) || !boundedString(item.observation, 3, 500) || typeof item.withoutTechnology !== 'boolean') throw new Error('Una variante de la actividad no tiene el formato esperado.');
+    return { level: item.level as GeneratedOutputs['teacher']['variants'][number]['level'], task: item.task.trim(), materials: item.materials.trim(), observation: item.observation.trim(), withoutTechnology: item.withoutTechnology };
+  });
+  if (!variants.some((item) => item.withoutTechnology)) throw new Error('Al menos una variante debe poder realizarse sin tecnología.');
+  const family = value.family;
+  if (!boundedString(family.guide, 8, 1800) || !boundedStringArray(family.questions, 3, 3, 300) || !boundedString(family.homeActivity, 5, 800) || !boundedString(family.avoidConclusion, 5, 600)) throw new Error('La guía para la familia no tiene el formato esperado.');
+  const school = value.school;
+  if (!boundedString(school.situation, 5, 700) || !boundedStringArray(school.observations, 1, 8, 500) || !boundedStringArray(school.openQuestions, 1, 8, 500) || !boundedString(school.indicator, 3, 500) || !boundedString(school.reviewDate, 3, 100) || !boundedString(school.consultWhen, 5, 700)) throw new Error('El resumen para la institución no tiene el formato esperado.');
+  return { teacher: { goal: teacher.goal.trim(), variants }, family: { guide: family.guide.trim(), questions: family.questions.map((item) => item.trim()) as [string, string, string], homeActivity: family.homeActivity.trim(), avoidConclusion: family.avoidConclusion.trim() }, school: { situation: school.situation.trim(), observations: school.observations.map((item) => item.trim()), openQuestions: school.openQuestions.map((item) => item.trim()), indicator: school.indicator.trim(), reviewDate: school.reviewDate.trim(), consultWhen: school.consultWhen.trim() } };
 }

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node --experimental-strip-types --test tests/*.test.mts"
+    "test": "node --experimental-strip-types --test tests/*.test.mts",
+    "eval:gemini": "node --experimental-strip-types scripts/evaluate-gemini.mts"
   },
   "dependencies": {
     "next": "^15.2.0",
