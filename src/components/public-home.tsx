@@ -12,7 +12,7 @@ const steps = [
 
 export function PublicHome() {
   return <main className="public-site">
-    <header className="public-nav"><Link className="public-brand" href="/"><span className="brand-mark">S</span><span className="brand-name">SendIA</span></Link><nav aria-label="Navegación"><a href="#que-es">Qué es</a><a href="#como-funciona">Cómo funciona</a><a href="#principios">Principios</a></nav><Link href="/beta/docentes/acceso" className="public-nav-login">Beta docente <span>↗</span></Link><Link href="/comprender" className="public-nav-cta">Empieza a explorar <span>↗</span></Link></header>
+    <header className="public-nav"><Link className="public-brand" href="/"><span className="brand-mark">S</span><span className="brand-name">SendIA</span></Link><nav aria-label="Navegación"><a href="#que-es">Qué es</a><a href="#como-funciona">Cómo funciona</a><a href="#principios">Principios</a><Link href="/propuesta">Propuesta académica</Link></nav><Link href="/beta/docentes/acceso" className="public-nav-login">Beta docente <span>↗</span></Link><Link href="/comprender" className="public-nav-cta">Empieza a explorar <span>↗</span></Link></header>
 
     <section className="public-hero">
       <div className="public-hero-copy"><div className="public-kicker"><span/> ANTES DE ADAPTAR, UNA PREGUNTA MEJOR</div><h1 className="serif">¿Y si no<br/><em>fuera lo que parece?</em></h1><p className="public-lede">SendIA acompaña a familias y profesionales educativos a ordenar lo que observan, explorar qué falta saber y decidir un paso pequeño que puedan revisar.</p><div className="public-actions"><Link href="/comprender?modo=propio" className="button button-primary public-primary">Probar con un ejemplo inventado <span>→</span></Link><Link href="/beta/docentes/acceso" className="button public-teacher-action">Beta docente · ver ejemplos <span>↗</span></Link><a className="public-text-link" href="#como-funciona">Cómo funciona <span>↓</span></a></div><div className="public-trust"><span className="trust-icon">✳</span><span>Cada senda se descubre acompañando.</span></div></div>
@@ -35,6 +35,6 @@ export function PublicHome() {
 
     <section className="public-glossary" aria-labelledby="glossary-title"><h2 id="glossary-title">Palabras que pueden variar según el país</h2><p>SendIA usa estos términos con cuidado y no determina diagnósticos ni categorías educativas.</p><dl>{copy.glossary.map((item) => <div key={item.term}><dt>{item.term}</dt><dd>{item.definition}</dd></div>)}</dl></section>
 
-    <footer className="public-footer"><Link className="public-brand" href="/"><span className="brand-mark">S</span><span className="brand-name">SendIA</span></Link><span>Cada senda se descubre acompañando.</span><Link href="/espacio">Entrar al espacio personal →</Link></footer>
+    <footer className="public-footer"><Link className="public-brand" href="/"><span className="brand-mark">S</span><span className="brand-name">SendIA</span></Link><span>Cada senda se descubre acompañando.</span><Link href="/propuesta">Propuesta académica →</Link><Link href="/espacio">Entrar al espacio personal →</Link></footer>
   </main>;
 }
