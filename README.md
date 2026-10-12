@@ -19,7 +19,7 @@ npm run dev
 - `/comprender?modo=demo`: recorrido preparado, sin Gemini en vivo y sin guardar plan; está identificado como simulación.
 - `/planes/plan-aula`: revisión y seguimiento de propuestas aprobadas.
 - `/beta/docentes/acceso` y `/beta/docentes/casos`: área de demostración docente separada, con doce casos ficticios. Las credenciales visibles en la pantalla son solo una simulación de acceso; no constituyen autenticación ni protegen datos reales.
-- `/colaboracion`: preparación local de acuerdos entre estudiante, familia y escuela. Guarda perspectivas, un paso común, responsable e indicador en el navegador actual; aún no sincroniza entre cuentas ni dispositivos.
+- `/colaboracion`: preparación local de acuerdos entre estudiante, familia y escuela. Guarda perspectivas, un paso común, responsable e indicador en el navegador actual; permite preparar un resumen para compartir manualmente desde el dispositivo. Aún no sincroniza entre cuentas ni dispositivos.
 - `/impacto`: cuestionario exploratorio de pilotaje, datos locales y exportaciones CSV.
 - La interfaz usa español latinoamericano neutro (`es-419`); textos, glosario, países y formatos de fecha están centralizados en `src/lib/i18n/es-419.ts`. La estructura admite sumar diccionarios regionales sin cambiar el idioma actual.
 
@@ -54,9 +54,11 @@ Inicia la aplicación con Gemini configurado (`GEMINI_API_KEY` solo en el servid
 npm run eval:gemini -- --output=artifacts/gemini-evaluation-run-01.json
 ```
 
-El script envía diez casos ficticios al endpoint local por defecto (`http://localhost:3000`). Para usar otra instancia, define `SENDIA_BASE_URL`. El archivo de resultados queda ignorado por Git; contiene las respuestas generadas para esos casos ficticios y señales automáticas, no puntuaciones de expertos. La revisión profesional se registra por separado con [la rúbrica de evaluación](docs/EVALUACION-IA.md). No es una prueba offline ni se debe ejecutar con datos reales.
+El script envía once casos ficticios al endpoint local por defecto (`http://localhost:3000`), incluido uno sin meta explícita para comprobar que se pida aclararla antes de adaptar. Para usar otra instancia, define `SENDIA_BASE_URL`. El archivo de resultados queda ignorado por Git; contiene las respuestas generadas para esos casos ficticios y señales automáticas, no puntuaciones de expertos. La revisión profesional se registra por separado con [la rúbrica de evaluación](docs/EVALUACION-IA.md). No es una prueba offline ni se debe ejecutar con datos reales.
 
 La ejecución real del 12 de octubre de 2026 recibió 10/10 respuestas con esquema válido. El registro caso por caso y sus límites están en [resultados de la ejecución](docs/EVALUACION-IA-RESULTADOS.md): las dos revisiones profesionales todavía están pendientes; no se presenta una puntuación de calidad.
+
+Las [simulaciones internas](docs/RESULTADOS-SIMULACIONES.md) cubren cinco recorridos cognitivos y cinco fixtures pedagógicos. No son pruebas con participantes, respuestas reales de Gemini ni evaluación de expertos.
 
 La ruta aplica límites de tamaño y frecuencia. `SENDIA_MAX_AI_REQUESTS_PER_HOUR` configura el máximo global por hora (120 por defecto). Los contadores de solicitudes son en memoria: para producción con varias instancias se necesita un almacén externo, como Redis/Upstash, y autenticación. No se implementan aquí.
 
@@ -90,7 +92,7 @@ npm test
 npm run build
 ```
 
-Las pruebas cubren parsers, señales de privacidad y diez casos docentes contra una respuesta simulada de Gemini. No sustituyen una evaluación en vivo del proveedor. Este repositorio no configura un script `lint`; la comprobación estática disponible es TypeScript.
+Las pruebas cubren parsers, señales de privacidad y diez casos docentes contra una respuesta simulada de Gemini. La batería para ejecutar Gemini en vivo contiene once casos. Ninguna de estas pruebas sustituye una evaluación profesional. Este repositorio no configura un script `lint`; la comprobación estática disponible es TypeScript.
 
 La integración continua ejecuta estas comprobaciones en cada push y pull request con Node.js 22.
 

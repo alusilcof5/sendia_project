@@ -84,4 +84,11 @@ export const geminiEvaluationCases: GeminiEvaluationCase[] = [
     context: 'Las tareas usaron formatos distintos y no se conocen los apoyos disponibles ni el idioma preferido para expresarse.',
     support: 'Falta escuchar al estudiante y revisar ejemplos comparables en ambas tareas.', history: [],
   },
+  {
+    id: 'E11', title: 'Meta de aprendizaje no explicitada', situation: 'challenge',
+    observation: 'En una actividad terminó antes que el grupo y pidió hacer otra cosa. No se anotó qué debía aprender ni cómo se comprobó lo aprendido.',
+    learningGoal: '',
+    context: 'No se conoce el criterio de éxito, la dificultad de la actividad ni qué alternativa pidió.',
+    support: 'Aún no se han recogido fortalezas o intereses en esta situación.', history: [],
+  },
 ];

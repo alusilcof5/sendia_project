@@ -6550,6 +6550,13 @@ body {
     font-weight: 800;
 }
 
+.diversification-option strong { font-size: 15px; line-height: 1.35; }
+.diversification-option small { margin-top: 0; font-size: 12px; line-height: 1.5; }
+.diversification-option small:last-child { margin-top: auto; }
+.goal-evidence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }
+.student-voice-note { margin: 18px 0; padding: 16px 18px; border-left: 4px solid #b69cff; background: #f0ecff; }
+.student-voice-note p { margin: 7px 0 0; line-height: 1.55; }
+
 .diversification-option > span:nth-child(2) {
     font-size: 12px;
     line-height: 1.6;
@@ -6595,6 +6602,7 @@ body {
 }
 
 @media(max-width:620px) {
+    .goal-evidence-grid { grid-template-columns: 1fr; }
     .flow-progress {
         gap: 4px;
         overflow-x: auto;
@@ -6830,6 +6838,10 @@ body {
 
 .known-needs-label { display: grid; gap: 8px; margin: 18px 0; font-weight: 650; }
 .known-needs-label small { color: #666c67; font-weight: 400; line-height: 1.55; }
+.optional-context { margin: 20px 0; padding: 16px 18px; border: 1px solid #dedbd2; border-radius: 10px; background: #f8f6f1; }
+.optional-context summary { cursor: pointer; color: #3657ff; font-weight: 750; }
+.optional-context[open] summary { margin-bottom: 14px; }
+.optional-context > label { display: grid; gap: 8px; margin: 14px 0; font-weight: 650; }
 .orientation-options { margin: 18px 0; padding: 14px 16px; border: 1px solid #ddd9cf; border-radius: 8px; background: #fbfaf6; }
 .orientation-options summary { cursor: pointer; font-weight: 700; }
 .orientation-options p, .orientation-options li { line-height: 1.65; color: #5e645f; }
@@ -6921,6 +6933,8 @@ body {
 .collab-saved-details > span { display: grid; gap: 6px; font-size: 13px; line-height: 1.5; }
 .collab-saved-card details { margin-top: 14px; }
 .collab-saved-card summary { cursor: pointer; color: #3657ff; font-size: 13px; font-weight: 750; }
+.collab-share-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 16px; }
+.collab-share-note { max-width: 760px; margin: 9px 0 0; color: #686770; font-size: 12px; line-height: 1.55; }
 .collab-saved-perspectives { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-top: 10px; }
 .collab-saved-perspectives p { display: grid; align-content: start; gap: 6px; margin: 0; padding: 12px; background: #f8f6f1; font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; }
 .collab-saved-perspectives strong { color: #3657ff; }

@@ -97,7 +97,7 @@ export default function Impacto() {
 
   return <AppShell><div className="content pilot-page">
     <section className="pilot-hero">
-      <div className="pilot-hero-copy"><span className="case-label">SEGUIMIENTO · VOCES ADULTAS</span><h1>Mirar de nuevo<br/><em>también es avanzar.</em></h1><p>Este espacio queda preparado para acompañar el pilotaje de SendIA. Responde tres preguntas, explora la herramienta y vuelve después para comparar tu percepción.</p><div className="pilot-hero-tags"><span>3 preguntas</span><span>2 momentos</span><span>En este navegador</span></div></div>
+      <div className="pilot-hero-copy"><span className="case-label">SEGUIMIENTO · VOCES ADULTAS</span><h1>Volver sobre lo vivido<br/><em>también ayuda a avanzar.</em></h1><p>Este espacio queda preparado para acompañar el pilotaje de SendIA. Responde tres preguntas, explora la herramienta y vuelve después para comparar tu percepción.</p><div className="pilot-hero-tags"><span>3 preguntas</span><span>2 momentos</span><span>En este navegador</span></div></div>
       <div className="pilot-hero-art" aria-hidden="true"><span className="pilot-art-orbit"/><span className="pilot-art-core">↗</span><span className="pilot-art-note pilot-art-before">ANTES</span><span className="pilot-art-note pilot-art-after">DESPUÉS</span><span className="pilot-art-caption">Observar<br/>· explorar · revisar</span></div>
     </section>
     <div className="pilot-banner"><strong>¿Qué recoge este seguimiento?</strong><span>Tu percepción sobre cómo separas observaciones de interpretaciones y eliges qué hacer. No evalúa al alumnado ni demuestra que SendIA cause cambios. Todavía no hay resultados hasta que las personas participantes completen ambas partes.</span></div>

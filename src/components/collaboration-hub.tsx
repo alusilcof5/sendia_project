@@ -10,8 +10,8 @@ const storageKey = 'sendia-team-agreements-v1';
 
 const perspectives = [
   { id: 'student', title: 'Voz del estudiante', prompt: '¿Qué dice que le ayuda o qué le gustaría probar?', color: 'student' },
-  { id: 'family', title: 'Mirada de la familia', prompt: '¿En qué momentos lo ven distinto? ¿Qué apoyos le sirven?', color: 'family' },
-  { id: 'school', title: 'Mirada de la escuela', prompt: '¿Qué ocurre con la tarea, las instrucciones y el grupo?', color: 'school' },
+  { id: 'family', title: 'Perspectiva de la familia', prompt: '¿En qué momentos lo ven distinto? ¿Qué apoyos le sirven?', color: 'family' },
+  { id: 'school', title: 'Perspectiva de la escuela', prompt: '¿Qué ocurre con la tarea, las instrucciones y el grupo?', color: 'school' },
   { id: 'guidance', title: 'Orientación y apoyos', prompt: '¿Qué conviene observar o coordinar entre profesionales?', color: 'guidance' },
 ] as const;
 
@@ -55,6 +55,7 @@ export function CollaborationHub() {
   const [reviewDate, setReviewDate] = useState(dateAfterAWeek);
   const [confirmed, setConfirmed] = useState(false);
   const [message, setMessage] = useState('');
+  const [shareMessage, setShareMessage] = useState<{ id: string; text: string } | null>(null);
 
   useEffect(() => {
     setPlans(readPlans());
@@ -100,13 +101,52 @@ export function CollaborationHub() {
     catch { setMessage('No se pudo eliminar el acuerdo.'); }
   };
 
+  const shareAgreement = async (agreement: TeamAgreement) => {
+    const perspectiveText = perspectives
+      .map((item) => agreement.perspectives[item.id] ? `${item.title}: ${agreement.perspectives[item.id]}` : '')
+      .filter(Boolean);
+    const text = [
+      `Acuerdo SendIA: ${agreement.planTitle}`,
+      `Objetivo: ${agreement.goal}`,
+      ...perspectiveText,
+      `Paso para probar: ${agreement.action}`,
+      `Coordina: ${agreement.responsible}`,
+      `Qué observar: ${agreement.indicator}`,
+      `Volver a conversar: ${agreement.reviewDate}`,
+      'Acuerdo preparado en SendIA. Revisar y ajustar conjuntamente.',
+    ].join('\n\n');
+    setShareMessage(null);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `Acuerdo SendIA · ${agreement.planTitle}`, text });
+        setShareMessage({ id: agreement.id, text: 'Se abrió la opción de compartir del dispositivo. Elige tú con quién y por qué canal compartirlo.' });
+        return;
+      }
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        setShareMessage({ id: agreement.id, text: 'Resumen copiado. Pégalo en el canal que el equipo haya acordado.' });
+        return;
+      }
+      const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'acuerdo-sendia.txt';
+      link.click();
+      URL.revokeObjectURL(url);
+      setShareMessage({ id: agreement.id, text: 'Resumen descargado. Revísalo antes de compartirlo.' });
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') return;
+      setShareMessage({ id: agreement.id, text: 'No se pudo preparar el resumen para compartir.' });
+    }
+  };
+
   return <AppShell><div className="content collaboration-page">
     <div className="eyebrow">SENDIA · ACOMPAÑAR EN EQUIPO</div>
     <section className="collab-hero">
       <div className="collab-hero-copy">
-        <span className="case-label">UNA MIRADA COMPARTIDA, MÁS CONTEXTO</span>
+        <span className="case-label">UNA SENDA COMPARTIDA, MÁS CONTEXTO</span>
         <h1 className="page-title serif">Nadie acompaña<br/><em>en solitario.</em></h1>
-        <p>Cuando familia, estudiante y escuela ponen en común lo que observan, es más fácil evitar conclusiones rápidas y acordar un apoyo coherente. En altas capacidades pueden coexistir la necesidad de reto y la necesidad de apoyo: hace falta coordinarse para mirar ambas.</p>
+        <p>Cuando familia, estudiante y escuela ponen en común lo que observan, es más fácil evitar conclusiones rápidas y acordar un apoyo coherente. En altas capacidades pueden coexistir la necesidad de reto y la necesidad de apoyo; por eso conviene coordinar cómo acompañarlas.</p>
       </div>
       <div className="collab-orbit" aria-label="Estudiante, familia y escuela alrededor de un acuerdo común">
         <span className="collab-orbit-line"/><span className="collab-orbit-core">Un<br/>acuerdo</span>
@@ -121,7 +161,7 @@ export function CollaborationHub() {
     </section>
 
     <section className="collab-workspace" aria-labelledby="collab-workspace-title">
-      <div className="collab-section-heading"><div><span className="eyebrow">PREPARAR UNA CONVERSACIÓN</span><h2 id="collab-workspace-title">Construyamos un acuerdo de equipo.</h2><p>Elige un plan, reúne lo que aporta cada mirada y deja claro el siguiente paso.</p></div><span className="demo-pill">Guardado local</span></div>
+      <div className="collab-section-heading"><div><span className="eyebrow">PREPARAR UNA CONVERSACIÓN</span><h2 id="collab-workspace-title">Construyamos un acuerdo de equipo.</h2><p>Elige un plan, reúne las perspectivas de cada persona y deja claro el siguiente paso.</p></div><span className="demo-pill">Guardado local</span></div>
 
       <div className="collab-form-grid">
         <div className="collab-form-main">
@@ -166,6 +206,9 @@ export function CollaborationHub() {
         <p className="collab-saved-goal">{agreement.goal}</p>
         <div className="collab-saved-details"><span><small>QUÉ PROBAR</small>{agreement.action}</span><span><small>QUIÉN COORDINA</small>{agreement.responsible}</span><span><small>REVISAR</small>{agreement.reviewDate}</span></div>
         <details><summary>Ver perspectivas y qué observar</summary><div className="collab-saved-perspectives">{perspectives.map((item) => agreement.perspectives[item.id] ? <p key={item.id}><strong>{item.title}</strong>{agreement.perspectives[item.id]}</p> : null)}<p><strong>Indicador</strong>{agreement.indicator}</p></div></details>
+        <div className="collab-share-actions"><button className="button button-secondary button-small" onClick={() => void shareAgreement(agreement)}>Preparar resumen para compartir <span>↗</span></button></div>
+        <p className="collab-share-note">Se abrirá el menú del dispositivo o se copiará/descargará un resumen. SendIA no lo envía ni sincroniza: revisa el contenido y elige un canal seguro con el equipo.</p>
+        {shareMessage?.id === agreement.id && <p className="pilot-message" role="status">{shareMessage.text}</p>}
       </article>)}</div>}
     </section>
   </div></AppShell>;

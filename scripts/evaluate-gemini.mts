@@ -24,11 +24,14 @@ function checkGuidance(value: GeneratedGuidance) {
   const directDiagnosis = /\b(?:tiene|presenta|es|demuestra)\s+(?:TDAH|TEA|autismo|dislexia|altas capacidades|superdotaci[oó]n|sobredotaci[oó]n)\b/i.test(text);
   const percentages = /(?:\b\d+(?:[.,]\d+)?\s*%|\bpor ciento\b)/i.test(text);
   const completeHypotheses = value.hypotheses.every((item) => item.supporting.length > 0 && item.missing.length > 0 && item.alternatives.length > 0);
-  const threePrinciples = new Set(value.diversification.map((item) => item.principle)).size === 3;
+  const alternativesKeepSameGoal = value.goalClear && new Set(value.diversification.map((item) => item.learningGoal.trim().toLocaleLowerCase())).size === 1;
+  const missingGoalHandledFirst = value.goalClear || (value.diversification.length === 1 && value.diversification[0].principle === 'no aplica');
   return {
     schemaValid: true,
     completeHypotheses,
-    threeDiversificationPrinciples: threePrinciples,
+    alternativesKeepSameGoal,
+    missingGoalHandledFirst,
+    studentVoiceStatusPresent: ['known', 'pending', 'contradictory'].includes(value.studentVoiceStatus),
     noObviousDiagnosticConclusion: !directDiagnosis,
     noPercentages: !percentages,
     note: 'Las comprobaciones automáticas son señales; no sustituyen la revisión pedagógica humana.',

@@ -4,13 +4,11 @@ import { POST } from '../src/app/api/understanding/generate/route.ts';
 import { teacherCases } from '../src/lib/teacher-cases.ts';
 
 const validGuidance = {
-  summary: 'Probar un cambio pequeño en el formato.', caution: 'Esta posibilidad no es una conclusión.',
+  summary: 'Probar un cambio pequeño en el formato.', goalClear: true, goalClarificationQuestion: '¿Qué aprendizaje se espera?', studentVoiceStatus: 'pending', studentVoice: '', studentQuestion: '¿Qué te ayudaría a participar?', caution: 'Esta posibilidad no es una conclusión.',
   observations: ['La participación cambia entre tareas.'], interpretations: [], pending: [],
   hypotheses: [{ title: 'Formato de actividad', possibility: 'el formato podría influir en la participación', supporting: ['La observación varía según la tarea.'], missing: ['Falta conocer la perspectiva del estudiante.'], alternatives: ['El ritmo o el agrupamiento también podrían influir.'] }],
   diversification: [
-    { principle: 'representación', strategy: 'Entregar una consigna breve y visual.', level: 'ordinaria' },
-    { principle: 'acción y expresión', strategy: 'Permitir explicar la respuesta de forma oral.', level: 'ordinaria' },
-    { principle: 'implicación', strategy: 'Ofrecer dos temas para practicar la misma meta.', level: 'ordinaria' },
+    { principle: 'representación', barrier: 'El formato puede dificultar el acceso.', evidence: 'La participación cambia entre tareas.', learningGoal: 'Comunicar una idea.', strategy: 'Entregar una consigna breve y visual.', strengthOrInterest: 'No hay información aportada.', indicator: 'Si inicia con la consigna visual.', level: 'ordinaria' },
   ],
   nextStep: { objective: 'Observar cuándo participa.', question: '¿Qué formato facilita participar?', why: 'Compara factores de la actividad.', action: 'Probar dos formatos con la misma meta.', responsible: 'Docente', indicator: 'Si participa y qué formato usa.', reviewIn: 'En una semana' },
 };
@@ -34,7 +32,7 @@ test('endpoint smoke: diez casos docentes ficticios producen guía validable con
       }));
       assert.equal(response.status, 200, `caso ${item.id}`);
       const body = await response.json();
-      assert.equal(body.diversification.length, 3, `caso ${item.id}`);
+      assert.ok(body.diversification.length <= 3, `caso ${item.id}`);
     }
     assert.equal(calls, 10);
   } finally {

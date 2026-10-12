@@ -4,6 +4,8 @@
 **Modelo configurado en el entorno:** `gemini-3.5-flash-lite`  
 **Resultado técnico:** 10 de 10 respuestas recibidas y válidas según el esquema de la aplicación.
 
+**Alcance temporal:** este registro corresponde a la versión del prompt y del esquema usada en esa ejecución. Tras cambios posteriores en el formato de respuesta y la batería, no debe tomarse como una comprobación de la versión actual; hay que repetir `npm run eval:gemini` para eso.
+
 Esta ejecución confirma que la integración en vivo respondió para los diez casos preparados. Las señales automáticas de esquema, presencia de campos y algunos patrones básicos pasaron en los diez. **No mide calidad pedagógica, seguridad suficiente ni impacto.** No participaron los dos profesionales previstos; por tanto, la evaluación humana sigue pendiente y no hay puntuaciones.
 
 El reporte detallado, que contiene las respuestas generadas para casos ficticios, está en `artifacts/gemini-evaluation-20261012-run-02.json` en el entorno local. `artifacts/` está excluido de Git; no se incluye en el repositorio ni debe compartirse como si fuera una evaluación experta.

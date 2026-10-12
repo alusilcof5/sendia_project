@@ -8,7 +8,7 @@ Este piloto comprueba si personas adultas entienden y pueden recorrer SendIA. No
 
 1. Invita a entre 3 y 6 personas adultas. El grupo pequeño sirve para detectar problemas de uso, no para generalizar resultados.
 2. Explica que se evalúa la herramienta, no a la persona, que participar es voluntario y que puede detenerse cuando quiera.
-3. Usa la demo preparada de Alex (`/comprender?modo=demo`) o, si se quiere probar Gemini, una de las diez situaciones ficticias de `src/lib/evaluation-cases.ts`.
+3. Usa la demo preparada de Alex (`/comprender?modo=demo`) o, si se quiere probar Gemini, una de las once situaciones ficticias de `src/lib/evaluation-cases.ts`.
 4. No grabes audio, video, pantalla ni nombres salvo consentimiento separado y necesidad justificada. La plantilla no solicita identidad, institución, ubicación ni información de estudiantes.
 5. Usa un perfil de navegador temporal. Al terminar, limpia los datos locales desde `/datos`.
 

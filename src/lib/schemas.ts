@@ -29,8 +29,8 @@ export function parseHypothesisReview(value: unknown): HypothesisReview {
 
 export type AdaptiveQuestion = { question: string; options: string[]; rationale: string };
 export type GeneratedHypothesis = { title: string; possibility: string; supporting: string[]; missing: string[]; alternatives: string[] };
-export type DiversificationOption = { principle: 'representación' | 'acción y expresión' | 'implicación'; strategy: string; level: 'ordinaria' | 'requiere valoración de la institución educativa' };
-export type GeneratedGuidance = { summary: string; observations: string[]; interpretations: string[]; pending: string[]; hypotheses: GeneratedHypothesis[]; diversification: DiversificationOption[]; nextStep: NextStep; caution: string };
+export type DiversificationOption = { principle: 'representación' | 'acción y expresión' | 'implicación' | 'no aplica'; barrier: string; evidence: string; learningGoal: string; strategy: string; strengthOrInterest: string; indicator: string; level: 'ordinaria' };
+export type GeneratedGuidance = { summary: string; goalClear: boolean; goalClarificationQuestion: string; studentVoiceStatus: 'known' | 'pending' | 'contradictory'; studentVoice: string; studentQuestion: string; observations: string[]; interpretations: string[]; pending: string[]; hypotheses: GeneratedHypothesis[]; diversification: DiversificationOption[]; nextStep: NextStep; caution: string };
 export type GeneratedOutputs = {
   teacher: { goal: string; variants: { level: 'apoyo' | 'base' | 'ampliación'; task: string; materials: string; observation: string; withoutTechnology: boolean }[] };
   family: { guide: string; questions: [string, string, string]; homeActivity: string; avoidConclusion: string };
@@ -53,10 +53,12 @@ export function parseAdaptiveQuestion(value: unknown): AdaptiveQuestion {
 }
 
 export function parseGeneratedGuidance(value: unknown): GeneratedGuidance {
-  if (!isStringRecord(value) || !boundedString(value.summary, 8, 700) || !boundedString(value.caution, 8, 700) ||
+  if (!isStringRecord(value) || !boundedString(value.summary, 8, 700) || !boundedString(value.caution, 8, 700) || typeof value.goalClear !== 'boolean' ||
+    !boundedString(value.goalClarificationQuestion, 5, 400) || !['known', 'pending', 'contradictory'].includes(String(value.studentVoiceStatus)) ||
+    typeof value.studentVoice !== 'string' || value.studentVoice.length > 500 || !boundedString(value.studentQuestion, 5, 300) ||
     !boundedStringArray(value.observations, 0, 8, 500) || !boundedStringArray(value.interpretations, 0, 8, 500) || !boundedStringArray(value.pending, 0, 8, 500) ||
     !Array.isArray(value.hypotheses) || value.hypotheses.length < 1 || value.hypotheses.length > 3 ||
-    !Array.isArray(value.diversification) || value.diversification.length !== 3) {
+    !Array.isArray(value.diversification) || value.diversification.length > 3) {
     throw new Error('La propuesta generada no tiene el formato esperado.');
   }
   const hypotheses = value.hypotheses.map((item) => {
@@ -69,20 +71,26 @@ export function parseGeneratedGuidance(value: unknown): GeneratedGuidance {
     return { title: item.title.trim(), possibility: /^podría ser que\b/i.test(possibility) ? possibility : `Podría ser que ${possibility.charAt(0).toLowerCase()}${possibility.slice(1)}`, supporting: item.supporting.map((entry) => entry.trim()), missing: item.missing.map((entry) => entry.trim()), alternatives: item.alternatives.map((entry) => entry.trim()) };
   });
   const diversification = value.diversification.map((item) => {
-    if (!isStringRecord(item) || !['representación', 'acción y expresión', 'implicación'].includes(String(item.principle)) || !boundedString(item.strategy, 8, 400) || item.level !== 'ordinaria') throw new Error('Una medida de diversificación no tiene el formato esperado.');
-    return { principle: item.principle as DiversificationOption['principle'], strategy: item.strategy.trim(), level: item.level as DiversificationOption['level'] };
+    if (!isStringRecord(item) || !['representación', 'acción y expresión', 'implicación', 'no aplica'].includes(String(item.principle)) ||
+      !boundedString(item.barrier, 5, 300) || !boundedString(item.evidence, 5, 400) || !boundedString(item.learningGoal, 5, 300) ||
+      !boundedString(item.strategy, 8, 400) || typeof item.strengthOrInterest !== 'string' || item.strengthOrInterest.length > 300 ||
+      !boundedString(item.indicator, 5, 300) || item.level !== 'ordinaria') throw new Error('Una medida de diversificación no tiene el formato esperado.');
+    return { principle: item.principle as DiversificationOption['principle'], barrier: item.barrier.trim(), evidence: item.evidence.trim(), learningGoal: item.learningGoal.trim(), strategy: item.strategy.trim(), strengthOrInterest: item.strengthOrInterest.trim(), indicator: item.indicator.trim(), level: 'ordinaria' as const };
   });
-  if (new Set(diversification.map((item) => item.principle)).size !== 3) throw new Error('La propuesta debe cubrir los tres principios de diversificación.');
+  if (diversification.some((item) => item.principle === 'no aplica') && diversification.length !== 1) throw new Error('Una aclaración de meta no debe mezclar opciones de adaptación.');
+  if (!value.goalClear && (diversification.length !== 1 || diversification[0].principle !== 'no aplica')) throw new Error('Aclara la meta antes de proponer ajustes.');
+  if (value.goalClear && diversification.length === 0) throw new Error('Incluye al menos una opción pertinente para la meta.');
+  if (value.goalClear && new Set(diversification.map((item) => item.learningGoal.trim().toLocaleLowerCase())).size !== 1) throw new Error('Las opciones deben conservar la misma meta de aprendizaje.');
+  if (value.studentVoiceStatus === 'pending' && value.studentVoice.trim()) throw new Error('La voz pendiente del estudiante no debe presentarse como conocida.');
+  if (value.studentVoiceStatus !== 'pending' && !value.studentVoice.trim()) throw new Error('Indica qué voz del estudiante se aportó o qué dato es contradictorio.');
   const step = value.nextStep;
   const stepKeys = ['objective', 'question', 'why', 'action', 'responsible', 'indicator', 'reviewIn'] as const;
   if (!isStringRecord(step) || !stepKeys.every((key) => boundedString(step[key], 1, 500))) {
     throw new Error('El siguiente paso generado no tiene el formato esperado.');
   }
-  const pending = value.pending.map((entry) => entry.trim()).slice(0, 6);
-  if (!pending.some((entry) => /estudiante|su voz|qué piensa|cómo vive/i.test(entry))) pending.push('Preguntar al estudiante cómo vive la situación y qué le ayudaría.');
-  if (!pending.some((entry) => /familia|persona cuidadora/i.test(entry))) pending.push('Cuando proceda, recoger también la perspectiva de la familia.');
+  const pending = value.pending.map((entry) => entry.trim()).slice(0, 8);
   return {
-    summary: value.summary.trim(), observations: value.observations.map((entry) => entry.trim()), interpretations: value.interpretations.map((entry) => entry.trim()),
+    summary: value.summary.trim(), goalClear: value.goalClear, goalClarificationQuestion: value.goalClarificationQuestion.trim(), studentVoiceStatus: value.studentVoiceStatus as GeneratedGuidance['studentVoiceStatus'], studentVoice: value.studentVoice.trim(), studentQuestion: value.studentQuestion.trim(), observations: value.observations.map((entry) => entry.trim()), interpretations: value.interpretations.map((entry) => entry.trim()),
     pending, hypotheses, diversification,
     nextStep: Object.fromEntries(stepKeys.map((key) => [key, (step[key] as string).trim()])) as unknown as NextStep,
     caution: value.caution.trim(),
