@@ -24,8 +24,8 @@ export function HomePage() {
       <div>
         <span className="case-label">PARA FAMILIAS Y PROFESIONALES EDUCATIVOS</span>
         <h1 className="page-title serif">Empieza por<br/><em>una situación.</em></h1>
-        <p className="subtitle">Prueba con una situación inventada, sin datos reales de estudiantes. SendIA te ayudará a ordenar preguntas y pensar un siguiente paso pequeño.</p>
-        <div className="home-hero-actions"><Link className="home-hero-primary" href="/comprender?modo=propio">Probar con un ejemplo inventado <span>→</span></Link><Link className="home-hero-secondary" href="/comprender?modo=demo">Ver el ejemplo ficticio de Alex</Link></div>
+        <p className="subtitle">Trabaja una situación real sin datos que identifiquen al estudiante, o prueba con un ejemplo. SendIA te ayudará a ordenar preguntas y acordar un siguiente paso.</p>
+        <div className="home-hero-actions"><Link className="home-hero-primary" href="/comprender?modo=propio">Comprender una situación <span>→</span></Link><Link className="home-hero-secondary" href="/crear">Crear o adaptar una actividad</Link></div>
       </div>
       <div className="home-hero-art" aria-hidden="true"><span className="home-hero-orbit home-hero-orbit-a"/><span className="home-hero-orbit home-hero-orbit-b"/><span className="home-hero-core">?</span><span className="home-hero-note home-note-one">OBSERVAR</span><span className="home-hero-note home-note-two">PREGUNTAR</span><span className="home-hero-note home-note-three">ACORDAR</span><span className="home-hero-art-caption">Una pregunta<br/>abre caminos.</span></div>
     </section>
@@ -37,9 +37,9 @@ export function HomePage() {
 
     <div className="home-start-options">
       <Link href="/comprender?modo=propio" className="panel home-start-card home-start-primary">
-        <span className="home-card-number">01 · EJEMPLO INVENTADO</span>
-        <h2>Crear un ejemplo para explorar</h2>
-        <p>Inventa una situación sin datos reales de estudiantes. Responde preguntas guiadas; el texto solo se envía a Gemini si das tu consentimiento.</p>
+        <span className="home-card-number">01 · TU SITUACIÓN</span>
+        <h2>Comprender antes de decidir</h2>
+        <p>Describe una situación real de forma anónima o usa una inventada. Responde preguntas guiadas; tú eliges si envías el texto a Gemini.</p>
         <span className="text-link">Empezar paso a paso <span>→</span></span>
       </Link>
       <Link href="/comprender?modo=demo" className="panel home-start-card">

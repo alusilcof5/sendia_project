@@ -4,7 +4,7 @@ export const locale = 'es-419' as const;
 
 export const aiSituationLabels: Record<Situation, string> = {
   participation: 'participación', frustration: 'inicio y bloqueo', relationships: 'relaciones', challenge: 'reto y aprendizaje',
-  asynchrony: 'ritmos distintos entre áreas', perfectionism: 'miedo a equivocarse', motivation: 'interés y motivación', transitions: 'cambios y transiciones',
+  asynchrony: 'ritmos distintos entre áreas', perfectionism: 'miedo a equivocarse', motivation: 'interés y motivación', transitions: 'cambios y transiciones', other: 'situación por clasificar o categoría no clara',
 };
 
 export const copy = {

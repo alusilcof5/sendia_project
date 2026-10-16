@@ -1,8 +1,16 @@
 # Evaluación pedagógica de respuestas de Gemini
 
+## Estado de la arquitectura multiagente
+
+La ruta actual usa funciones secuenciales con Gemini, no agentes autónomos ni una conversación entre modelos: (A) formula una pregunta adaptativa por solicitud; (B) ordena la información y devuelve referencias a campos de origen; (C) recibe esa síntesis validada y prepara opciones y un siguiente paso. Al solicitar orientación se hacen dos llamadas a Gemini. Los borradores de materiales se generan en otra ruta, solo tras aprobar el plan y consentir ese envío por separado.
+
+Los esquemas tipados, las referencias de evidencia y los controles del servidor comprueban formato y algunas condiciones de consistencia. No verifican por sí solos que la interpretación sea pedagógicamente correcta, útil, inclusiva o segura en todos los casos. Las respuestas deben revisarse con personas profesionales antes de afirmar calidad.
+
+**La batería y los resultados previos no validan esta versión del flujo.** Hay que ejecutar de nuevo los escenarios ficticios contra el código desplegado y completar la revisión independiente de dos profesionales descrita abajo. Hasta entonces, la evaluación humana de esta versión sigue pendiente. No ejecutar la batería real sin confirmar cuota y coste del proyecto Gemini.
+
 ## Qué demuestra y qué no
 
-`npm run eval:gemini` envía once escenarios ficticios al endpoint real de SendIA, incluido uno sin meta explícita. El endpoint valida estructura y coherencia declarada, pero eso por sí solo no demuestra calidad educativa. El reporte conserva la respuesta por caso y marca comprobaciones automáticas simples; ninguna puntuación de esta rúbrica se calcula automáticamente.
+El script `npm run eval:gemini` envía once escenarios ficticios al endpoint real de SendIA, incluido uno sin meta explícita. El endpoint valida estructura y coherencia declarada, pero eso por sí solo no demuestra calidad educativa. El reporte conserva la respuesta por caso y marca comprobaciones automáticas simples; ninguna puntuación de esta rúbrica se calcula automáticamente.
 
 ## Procedimiento con dos profesionales
 

@@ -147,6 +147,7 @@ export function CollaborationHub() {
         <span className="case-label">UNA SENDA COMPARTIDA, MÁS CONTEXTO</span>
         <h1 className="page-title serif">Nadie acompaña<br/><em>en solitario.</em></h1>
         <p>Cuando familia, estudiante y escuela ponen en común lo que observan, es más fácil evitar conclusiones rápidas y acordar un apoyo coherente. En altas capacidades pueden coexistir la necesidad de reto y la necesidad de apoyo; por eso conviene coordinar cómo acompañarlas.</p>
+        <Link className="button button-primary collab-brainstorm-cta" href="/colaboracion/ideas">Abrir lluvia de ideas <span>↗</span></Link>
       </div>
       <div className="collab-orbit" aria-label="Estudiante, familia y escuela alrededor de un acuerdo común">
         <span className="collab-orbit-line"/><span className="collab-orbit-core">Un<br/>acuerdo</span>

@@ -1,4 +1,4 @@
-export type Situation = 'participation' | 'frustration' | 'relationships' | 'challenge' | 'asynchrony' | 'perfectionism' | 'motivation' | 'transitions';
+export type Situation = 'participation' | 'frustration' | 'relationships' | 'challenge' | 'asynchrony' | 'perfectionism' | 'motivation' | 'transitions' | 'other';
 export type Observation = { id: string; text: string; category: 'observation' | 'interpretation' | 'pending' };
 export type EvidenceStatus = 'compatible' | 'insufficient' | 'contradictory' | 'unsupported';
 export type CaseObservation = { id: string; text: string; source: 'initial' | 'new'; kind: 'observation' | 'interpretation' | 'unknown' };
@@ -28,8 +28,8 @@ export function parseHypothesisReview(value: unknown): HypothesisReview {
 
 
 export type AdaptiveQuestion = { question: string; options: string[]; rationale: string };
-export type GeneratedHypothesis = { title: string; possibility: string; supporting: string[]; missing: string[]; alternatives: string[] };
-export type DiversificationOption = { principle: 'representación' | 'acción y expresión' | 'implicación' | 'no aplica'; barrier: string; evidence: string; learningGoal: string; strategy: string; strengthOrInterest: string; indicator: string; level: 'ordinaria' };
+export type GeneratedHypothesis = { title: string; possibility: string; supporting: string[]; missing: string[]; alternatives: string[]; evidenceRefs?: string[] };
+export type DiversificationOption = { principle: 'representación' | 'acción y expresión' | 'implicación' | 'no aplica'; barrier: string; evidence: string; learningGoal: string; strategy: string; strengthOrInterest: string; indicator: string; level: 'ordinaria'; evidenceRefs?: string[] };
 export type GeneratedGuidance = { summary: string; goalClear: boolean; goalClarificationQuestion: string; studentVoiceStatus: 'known' | 'pending' | 'contradictory'; studentVoice: string; studentQuestion: string; observations: string[]; interpretations: string[]; pending: string[]; hypotheses: GeneratedHypothesis[]; diversification: DiversificationOption[]; nextStep: NextStep; caution: string };
 export type GeneratedOutputs = {
   teacher: { goal: string; variants: { level: 'apoyo' | 'base' | 'ampliación'; task: string; materials: string; observation: string; withoutTechnology: boolean }[] };
@@ -67,15 +67,17 @@ export function parseGeneratedGuidance(value: unknown): GeneratedGuidance {
       !boundedStringArray(item.alternatives, 1, 6, 400)) {
       throw new Error('Una hipótesis generada no tiene el formato esperado.');
     }
+    if (item.evidenceRefs !== undefined && (!Array.isArray(item.evidenceRefs) || item.evidenceRefs.length === 0 || !item.evidenceRefs.every((ref) => typeof ref === 'string'))) throw new Error('Las referencias de una hipótesis no son válidas.');
     const possibility = item.possibility.trim();
-    return { title: item.title.trim(), possibility: /^podría ser que\b/i.test(possibility) ? possibility : `Podría ser que ${possibility.charAt(0).toLowerCase()}${possibility.slice(1)}`, supporting: item.supporting.map((entry) => entry.trim()), missing: item.missing.map((entry) => entry.trim()), alternatives: item.alternatives.map((entry) => entry.trim()) };
+    return { title: item.title.trim(), possibility: /^podría ser que\b/i.test(possibility) ? possibility : `Podría ser que ${possibility.charAt(0).toLowerCase()}${possibility.slice(1)}`, supporting: item.supporting.map((entry) => entry.trim()), missing: item.missing.map((entry) => entry.trim()), alternatives: item.alternatives.map((entry) => entry.trim()), ...(Array.isArray(item.evidenceRefs) ? { evidenceRefs: item.evidenceRefs as string[] } : {}) };
   });
   const diversification = value.diversification.map((item) => {
     if (!isStringRecord(item) || !['representación', 'acción y expresión', 'implicación', 'no aplica'].includes(String(item.principle)) ||
       !boundedString(item.barrier, 5, 300) || !boundedString(item.evidence, 5, 400) || !boundedString(item.learningGoal, 5, 300) ||
       !boundedString(item.strategy, 8, 400) || typeof item.strengthOrInterest !== 'string' || item.strengthOrInterest.length > 300 ||
       !boundedString(item.indicator, 5, 300) || item.level !== 'ordinaria') throw new Error('Una medida de diversificación no tiene el formato esperado.');
-    return { principle: item.principle as DiversificationOption['principle'], barrier: item.barrier.trim(), evidence: item.evidence.trim(), learningGoal: item.learningGoal.trim(), strategy: item.strategy.trim(), strengthOrInterest: item.strengthOrInterest.trim(), indicator: item.indicator.trim(), level: 'ordinaria' as const };
+    if (item.evidenceRefs !== undefined && (!Array.isArray(item.evidenceRefs) || item.evidenceRefs.length === 0 || !item.evidenceRefs.every((ref) => typeof ref === 'string'))) throw new Error('Las referencias de una opción no son válidas.');
+    return { principle: item.principle as DiversificationOption['principle'], barrier: item.barrier.trim(), evidence: item.evidence.trim(), learningGoal: item.learningGoal.trim(), strategy: item.strategy.trim(), strengthOrInterest: item.strengthOrInterest.trim(), indicator: item.indicator.trim(), level: 'ordinaria' as const, ...(Array.isArray(item.evidenceRefs) ? { evidenceRefs: item.evidenceRefs as string[] } : {}) };
   });
   if (diversification.some((item) => item.principle === 'no aplica') && diversification.length !== 1) throw new Error('Una aclaración de meta no debe mezclar opciones de adaptación.');
   if (!value.goalClear && (diversification.length !== 1 || diversification[0].principle !== 'no aplica')) throw new Error('Aclara la meta antes de proponer ajustes.');
