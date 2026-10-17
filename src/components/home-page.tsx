@@ -53,7 +53,6 @@ export function HomePage() {
     <nav className="home-next-links" aria-label="Otras áreas de SendIA">
       <Link href="/planes/plan-aula"><span className="home-link-icon">↗</span><strong>Mis planes</strong><span>Revisar acuerdos y próximos pasos →</span></Link>
       <Link href="/colaboracion"><span className="home-link-icon">◎</span><strong>Colaboración</strong><span>Preparar una conversación de equipo →</span></Link>
-      <Link href="/impacto"><span className="home-link-icon">⌁</span><strong>Impacto</strong><span>Conocer el seguimiento del pilotaje →</span></Link>
     </nav>
   </div></AppShell>;
 }

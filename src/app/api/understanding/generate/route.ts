@@ -4,6 +4,7 @@ import { GeminiAgentError, generateStructuredGemini } from '../../../../lib/agen
 import { findDirectIdentifiers, identifierMessage } from '../../../../lib/privacy.ts';
 import { aiSituationLabels, countries } from '../../../../lib/i18n/es-419.ts';
 import { prompts } from '../../../../lib/i18n/prompts.es-419.ts';
+import { isUnderstandingProfile, understandingProfiles, type UnderstandingProfile } from '../../../../lib/understanding-profiles.ts';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -62,7 +63,8 @@ export async function POST(request: Request) {
   if (Number.isFinite(contentLength) && contentLength > 20_000) return Response.json({ error: 'La solicitud supera el tamaño máximo permitido (20 KB).' }, { status: 413 });
   let body: unknown;
   try { body = await request.json(); } catch { return Response.json({ error: 'Solicitud no válida.' }, { status: 400 }); }
-  if (!isStringRecord(body) || body.adultConsent !== true || !['question', 'guidance'].includes(String(body.action)) || !situationIds.includes(body.situation as Situation) || !boundedText(body.observation, 1200) || (body.learningGoal !== undefined && typeof body.learningGoal !== 'string') || (body.context !== undefined && typeof body.context !== 'string') || (body.support !== undefined && typeof body.support !== 'string') || (body.studentPerspective !== undefined && typeof body.studentPerspective !== 'string') || (body.evidence !== undefined && typeof body.evidence !== 'string') || (body.expectedDemonstration !== undefined && typeof body.expectedDemonstration !== 'string') || (body.necesidadesConocidas !== undefined && typeof body.necesidadesConocidas !== 'string') || (body.answer !== undefined && typeof body.answer !== 'string') || (body.question !== undefined && typeof body.question !== 'string') || (body.pais !== undefined && (typeof body.pais !== 'string' || !countries.some(([code]) => code === body.pais))) || tooLong(body.learningGoal, 500) || tooLong(body.context, 1200) || tooLong(body.support, 1200) || tooLong(body.studentPerspective, 500) || tooLong(body.evidence, 600) || tooLong(body.expectedDemonstration, 500) || tooLong(body.necesidadesConocidas, 500) || tooLong(body.answer, 600) || tooLong(body.question, 600) || !validHistory(body.history)) return Response.json({ error: 'Revisa el consentimiento, la situación y los límites de texto.' }, { status: 400 });
+  if (!isStringRecord(body) || body.adultConsent !== true || (body.profile !== undefined && !isUnderstandingProfile(body.profile)) || !['question', 'guidance'].includes(String(body.action)) || !situationIds.includes(body.situation as Situation) || !boundedText(body.observation, 1200) || (body.learningGoal !== undefined && typeof body.learningGoal !== 'string') || (body.context !== undefined && typeof body.context !== 'string') || (body.support !== undefined && typeof body.support !== 'string') || (body.studentPerspective !== undefined && typeof body.studentPerspective !== 'string') || (body.evidence !== undefined && typeof body.evidence !== 'string') || (body.expectedDemonstration !== undefined && typeof body.expectedDemonstration !== 'string') || (body.necesidadesConocidas !== undefined && typeof body.necesidadesConocidas !== 'string') || (body.answer !== undefined && typeof body.answer !== 'string') || (body.question !== undefined && typeof body.question !== 'string') || (body.pais !== undefined && (typeof body.pais !== 'string' || !countries.some(([code]) => code === body.pais))) || tooLong(body.learningGoal, 500) || tooLong(body.context, 1200) || tooLong(body.support, 1200) || tooLong(body.studentPerspective, 500) || tooLong(body.evidence, 600) || tooLong(body.expectedDemonstration, 500) || tooLong(body.necesidadesConocidas, 500) || tooLong(body.answer, 600) || tooLong(body.question, 600) || !validHistory(body.history)) return Response.json({ error: 'Revisa el consentimiento, el perfil, la situación y los límites de texto.' }, { status: 400 });
+  const profile: UnderstandingProfile = isUnderstandingProfile(body.profile) ? body.profile : 'teacher';
   const submittedText = [body.observation, body.learningGoal, body.context, body.support, body.studentPerspective, body.evidence, body.expectedDemonstration, body.necesidadesConocidas, body.answer, body.question, ...(Array.isArray(body.history) ? body.history.flatMap((item) => isStringRecord(item) ? [item.question, item.answer] : []) : [])].filter((item): item is string => typeof item === 'string').join('\n');
   const identifiers = findDirectIdentifiers(submittedText);
   if (identifiers.length) return Response.json({ error: identifierMessage(identifiers.map(({ kind }) => kind)) }, { status: 400 });
@@ -87,13 +89,14 @@ export async function POST(request: Request) {
   try {
     if (action === 'question') {
       const questionInput = { situation: data.situation, observation: data.observation, learningGoal: data.learningGoal, currentEvidence: data.currentEvidence, expectedDemonstration: data.expectedDemonstration, studentPerspective: data.studentPerspective, context: data.context, history: data.history };
-      const raw = await runAgent(prompts.question, questionInput, questionSchema, 800);
+      const raw = await runAgent(`${prompts.question}\n\n${understandingProfiles[profile].prompts}\n${understandingProfiles[profile].question}`, questionInput, questionSchema, 800);
       return Response.json(parseAdaptiveQuestion(raw), { headers: { 'Cache-Control': 'no-store' } });
     }
 
     // Agente B: organiza los datos y vincula cada afirmación a campos disponibles.
     const availableFields = availableEvidenceFields(data);
-    const mapRaw = await runAgent(prompts.explorer, data, explorationSchema, 3_000);
+    const profileData = { ...data, userProfile: profile, profileContext: understandingProfiles[profile].focus };
+    const mapRaw = await runAgent(`${prompts.explorer}\n\n${understandingProfiles[profile].prompts}`, profileData, explorationSchema, 3_000);
     const map = parsePedagogicalMap(mapRaw, availableFields);
     const mapEvidenceRefs = new Set<EvidenceField>([
       ...map.goalEvidenceRefs, ...map.observations.flatMap((item) => item.evidenceRefs),
@@ -104,7 +107,7 @@ export async function POST(request: Request) {
     if (!mapEvidenceRefs.size) throw new Error('La síntesis no contiene referencias a los datos de entrada.');
 
     // Agente C: recibe la síntesis validada y la meta, no el relato completo.
-    const planRaw = await runAgent(prompts.planner, { learningGoal: data.learningGoal, map }, plannerSchema, 2_800);
+    const planRaw = await runAgent(`${prompts.planner}\n\n${understandingProfiles[profile].prompts}`, { userProfile: profile, learningGoal: data.learningGoal, map }, plannerSchema, 2_800);
     const plan = parseAgentPlan(planRaw, mapEvidenceRefs);
     if (plan.goalClear !== map.goalClear) throw new Error('La síntesis y el plan discrepan sobre la claridad de la meta.');
 
