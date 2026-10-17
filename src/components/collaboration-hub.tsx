@@ -147,7 +147,7 @@ export function CollaborationHub() {
         <span className="case-label">UNA SENDA COMPARTIDA, MÁS CONTEXTO</span>
         <h1 className="page-title serif">Nadie acompaña<br/><em>en solitario.</em></h1>
         <p>Cuando familia, estudiante y escuela ponen en común lo que observan, es más fácil evitar conclusiones rápidas y acordar un apoyo coherente. En altas capacidades pueden coexistir la necesidad de reto y la necesidad de apoyo; por eso conviene coordinar cómo acompañarlas.</p>
-        <Link className="button button-primary collab-brainstorm-cta" href="/colaboracion/ideas">Abrir lluvia de ideas <span>↗</span></Link>
+        <div className="collab-primary-actions"><Link className="button button-primary" href="/colaboracion/equipo">Abrir espacio de equipo <span>→</span></Link><Link className="button button-secondary collab-brainstorm-cta" href="/colaboracion/ideas">Abrir lluvia de ideas <span>↗</span></Link></div>
       </div>
       <div className="collab-orbit" aria-label="Estudiante, familia y escuela alrededor de un acuerdo común">
         <span className="collab-orbit-line"/><span className="collab-orbit-core">Un<br/>acuerdo</span>
@@ -162,7 +162,7 @@ export function CollaborationHub() {
     </section>
 
     <section className="collab-workspace" aria-labelledby="collab-workspace-title">
-      <div className="collab-section-heading"><div><span className="eyebrow">PREPARAR UNA CONVERSACIÓN</span><h2 id="collab-workspace-title">Construyamos un acuerdo de equipo.</h2><p>Elige un plan, reúne las perspectivas de cada persona y deja claro el siguiente paso.</p></div><span className="demo-pill">Guardado local</span></div>
+      <div className="collab-section-heading"><div><span className="eyebrow">BORRADOR EN ESTE DISPOSITIVO</span><h2 id="collab-workspace-title">Prepara un acuerdo para conversar.</h2><p>Este borrador se guarda solo en este navegador. Para coordinar un plan con permisos y seguimiento compartido, usa el <Link href="/colaboracion/equipo">espacio de equipo</Link>.</p></div><span className="demo-pill">Guardado local</span></div>
 
       <div className="collab-form-grid">
         <div className="collab-form-main">

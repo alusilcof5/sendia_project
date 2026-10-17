@@ -7655,6 +7655,34 @@ body {
 
 /* Hoja de ruta informativa para familias */
 .family-page { max-width: 1120px; padding-bottom: 72px; }
+.family-path-picker { margin-top: 28px; padding: clamp(22px, 4vw, 36px); border: 1px solid #dcd8ce; background: #fffdf7; box-shadow: 4px 5px 0 rgb(37 36 42 / 8%); }
+.family-path-heading { max-width: 650px; margin-bottom: 20px; }
+.family-path-heading .eyebrow { color: #3657ff; }
+.family-path-heading h2 { margin: 7px 0; color: #25242a; font: 850 clamp(25px, 3.5vw, 38px)/1.08 Montserrat, Poppins, sans-serif; letter-spacing: -.045em; }
+.family-path-heading p { margin: 0; color: #66646c; font-size: 13px; line-height: 1.6; }
+.family-path-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+.family-path-card { display: flex; min-height: 255px; flex-direction: column; align-items: flex-start; padding: 19px; border: 1px solid #25242a; background: #eef0ff; color: #25242a; text-align: left; cursor: pointer; box-shadow: 4px 4px 0 #25242a; transition: transform .16s ease, box-shadow .16s ease; }
+.family-path-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #25242a; }
+.family-path-card:focus-visible { outline: 3px solid #3657ff; outline-offset: 4px; }
+.family-path-school-talk { background: #c7f464; }
+.family-path-home-situation { background: #ffd84d; }
+.family-path-top { display: flex; width: 100%; align-items: center; justify-content: space-between; color: #3657ff; font: 800 9px Montserrat, sans-serif; letter-spacing: .08em; }
+.family-path-symbol { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #25242a; border-radius: 50%; background: #fffdf7; color: #3657ff; font-size: 22px; }
+.family-path-card > strong { margin-top: 22px; font: 800 19px/1.2 Montserrat, Poppins, sans-serif; letter-spacing: -.025em; }
+.family-path-card > p { margin: 8px 0 20px; color: #49474f; font-size: 12px; line-height: 1.6; }
+.family-path-next { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 11px; border-top: 1px solid rgb(37 36 42 / 25%); color: #25242a; font-size: 11px; font-weight: 800; }
+.family-path-next span { color: #3657ff; font-size: 17px; }
+.family-path-note { margin: 17px 0 0; color: #696770; font-size: 10px; line-height: 1.5; }
+.family-selected-path { display: flex; align-items: center; gap: 14px; margin: -8px 0 22px; padding: 15px 17px; border-left: 4px solid #3657ff; background: #eef0ff; }
+.family-selected-path > span { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid #25242a; border-radius: 50%; background: #3657ff; color: white; font-size: 21px; }
+.family-selected-path > div { display: grid; gap: 4px; flex: 1; }
+.family-selected-path strong { color: #25242a; font: 800 15px/1.3 Montserrat, Poppins, sans-serif; }
+.family-selected-path small { color: #4e4c55; font-size: 12px; line-height: 1.5; }
+.family-selected-path button { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; gap: 8px; padding: 10px 17px; border: 1px solid #25242a; border-radius: 4px; background: #3657ff; color: #ffd84d; box-shadow: 3px 3px 0 #25242a; font: 800 14px/1.2 Montserrat, Poppins, sans-serif; cursor: pointer; transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease, color .16s ease; }
+.family-selected-path button::after { content: '↗'; font-size: 17px; }
+.family-selected-path button:hover { transform: translate(-2px, -2px); background: #25242a; color: #ffd84d; box-shadow: 5px 5px 0 #3657ff; }
+.family-selected-path button:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 #25242a; }
+.family-selected-path button:focus-visible { outline: 3px solid #25242a; outline-offset: 4px; }
 .family-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, .56fr); align-items: center; gap: 32px; min-height: 310px; overflow: hidden; padding: clamp(28px, 5vw, 58px); border: 2px solid #25242a; background: #3657ff; color: #fffdf7; }
 .family-hero-copy { position: relative; z-index: 1; max-width: 700px; }
 .family-hero .case-label { color: #c7f464; }
@@ -7671,8 +7699,13 @@ body {
 .family-node-middle { top: 47%; left: 37%; background: #b69cff; }
 .family-node-end { top: 4%; right: 1%; background: #ffd84d; }
 .family-route-star { position: absolute; right: 25%; bottom: 0; color: #fffdf7; font-size: 42px; transform: rotate(18deg); }
-.family-boundary { display: grid; grid-template-columns: 175px minmax(0, 1fr); gap: 18px; margin-top: 18px; padding: 17px 20px; border: 1px solid #25242a; background: #fff0ec; font-size: 12px; line-height: 1.65; }
-.family-boundary strong { color: #a83d31; font: 800 14px Montserrat, sans-serif; }
+.family-boundary { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: start; gap: 14px; margin-top: 18px; padding: 19px 21px; border: 1px solid #25242a; border-left: 6px solid #ff7058; background: #fff0ec; box-shadow: 3px 4px 0 rgb(37 36 42 / 12%); }
+.family-boundary-icon { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #25242a; border-radius: 50%; background: #ff7058; color: #25242a; font: 900 22px Montserrat, sans-serif; }
+.family-boundary-copy { display: grid; gap: 7px; }
+.family-boundary-copy > strong { color: #25242a; font: 800 16px/1.3 Montserrat, sans-serif; }
+.family-boundary-copy p { margin: 0; color: #46434a; font-size: 12px; line-height: 1.65; }
+.family-boundary-copy .family-boundary-privacy { padding: 10px 12px; border: 1px solid #e8c4b8; background: #fffdf7; color: #333139; }
+.family-boundary-privacy b { color: #a83d31; }
 .family-wizard { margin-top: 30px; padding: clamp(20px, 4vw, 38px); border: 1px solid #dcd8ce; background: #fff; box-shadow: 5px 5px 0 #e9e6de; }
 .family-wizard-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 25px; }
 .family-wizard-head h2,.family-result-top h2 { margin: 8px 0; font: 850 clamp(25px, 3.5vw, 38px)/1.1 Montserrat, Poppins, sans-serif; letter-spacing: -.045em; }
@@ -7763,14 +7796,22 @@ body {
 .family-sources li span,.family-sources li small { color: #696871; font-size: 10px; line-height: 1.5; }
 .family-new-roadmap { margin-top: 18px; padding: 8px 0; }
 @media (max-width: 760px) {
+  .family-path-grid { grid-template-columns: 1fr; }
+  .family-path-card { min-height: 0; }
+  .family-path-card > strong { margin-top: 14px; }
   .family-hero { grid-template-columns: 1fr; gap: 8px; }
   .family-hero-art { min-height: 150px; max-width: 390px; width: 100%; margin: 0 auto; }
-  .family-boundary { grid-template-columns: 1fr; gap: 5px; }
+  .family-boundary { grid-template-columns: 36px minmax(0, 1fr); gap: 10px; padding: 15px; }
+  .family-boundary-icon { width: 34px; height: 34px; }
+  .family-boundary-copy > strong { font-size: 14px; }
   .family-result-top { flex-direction: column; }
   .family-result-actions { display: flex; flex-wrap: wrap; justify-items: start; }
   .family-sources ul { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
+  .family-selected-path { align-items: flex-start; flex-wrap: wrap; }
+  .family-selected-path > div { min-width: calc(100% - 60px); }
+  .family-selected-path button { width: calc(100% - 56px); margin-left: 56px; }
   .family-stage-grid,.family-focus-grid,.family-optional-context,.family-result-columns,.family-conversation-grid { grid-template-columns: 1fr; }
   .family-wizard-head { display: block; }
   .family-step-indicator { margin-top: 16px; }
@@ -7916,4 +7957,123 @@ body {
 @media (max-width: 620px) {
   .privacy-alias { grid-template-columns: 1fr; }
   .privacy-alias-actions { justify-content: flex-start; flex-wrap: wrap; }
+}
+
+.institution-page { width: min(1160px, 100%); margin-inline: auto; padding-bottom: 64px; }
+.institution-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin: 22px 0 18px; padding: clamp(24px, 4vw, 42px); border: 1px solid #25242a; background: #3657ff; color: #fffdf7; box-shadow: 5px 6px 0 #25242a; }
+.institution-heading .eyebrow { color: #c7f464; }
+.institution-heading h1 { margin: 8px 0 12px; color: #fffdf7; font-size: clamp(36px, 5vw, 58px); line-height: .98; }
+.institution-heading h1 em { color: #ffd84d; font-style: normal; }
+.institution-heading p { max-width: 680px; margin: 0; color: rgb(255 253 247 / 88%); font-size: 14px; line-height: 1.65; }
+.institution-heading-mark { display: grid; width: 112px; height: 112px; flex: 0 0 auto; place-items: center; border: 2px solid #25242a; border-radius: 50%; background: #c7f464; color: #3657ff; font-size: 74px; line-height: 1; box-shadow: 4px 4px 0 #25242a; }
+.institution-privacy { margin-bottom: 18px; padding: 14px 17px; border-left: 4px solid #ff5d4d; background: #fff0e9; color: #414047; font-size: 12px; line-height: 1.6; }
+.institution-privacy strong { margin-right: 5px; color: #25242a; }
+.institution-panel { padding: clamp(20px, 3vw, 30px); border: 1px solid #dedbd2; border-radius: 11px 11px 5px 11px; background: #fffdf7; box-shadow: 4px 5px 0 rgb(37 36 42 / 8%); }
+.institution-panel h2,.institution-section-title h2 { margin: 7px 0; color: #25242a; font: 800 clamp(21px, 2.5vw, 28px)/1.16 Montserrat, sans-serif; letter-spacing: -.035em; }
+.institution-panel p,.institution-section-title p { color: #5b5961; font-size: 12px; line-height: 1.6; }
+.institution-auth-grid,.institution-onboarding { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(250px, .85fr); gap: 17px; }
+.institution-auth-note { background: #c7f464; }
+.institution-auth-note b { font: 800 15px Montserrat, sans-serif; }
+.institution-form { display: grid; gap: 13px; max-width: 560px; margin-top: 20px; }
+.institution-form label,.institution-invite-form label,.institution-toolbar-actions label,.institution-share-fields label { display: grid; gap: 6px; color: #303036; font-size: 11px; font-weight: 700; }
+.institution-form input,.institution-toolbar select,.institution-invite-form select,.institution-share-fields select,.institution-share-fields input,.institution-updates select,.institution-status select { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #c9c6be; border-radius: 5px; background: #fff; color: #25242a; font: 500 12px Poppins, sans-serif; }
+.institution-form input:focus-visible,.institution-page select:focus-visible,.institution-page input:focus-visible,.institution-page textarea:focus-visible { outline: 3px solid rgb(54 87 255 / 28%); outline-offset: 1px; border-color: #3657ff; }
+.institution-message,.institution-feedback { margin: 14px 0 0; padding: 11px 14px; border-left: 4px solid #3657ff; background: #eef0ff; color: #303036; font-size: 12px; line-height: 1.5; }
+.institution-feedback.error { border-color: #ff5d4d; background: #fff0e9; }
+.institution-onboarding small { display: block; margin-top: 12px; color: #626068; font-size: 11px; }
+.institution-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 20px 0 18px; padding: 18px 22px; border: 1px solid #dedbd2; background: #fffdf7; }
+.institution-toolbar h2 { margin: 4px 0; font: 800 23px Montserrat, sans-serif; letter-spacing: -.03em; }
+.institution-toolbar-actions { display: flex; align-items: center; gap: 13px; }
+.institution-role-pill { display: inline-block; padding: 4px 9px; border-radius: 20px; background: #e6efff; color: #2948df; font-size: 10px; font-weight: 700; }
+.institution-admin { display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, .75fr); align-items: center; gap: 14px 28px; margin-bottom: 17px; background: #f0f2ff; }
+.institution-invite-form { display: flex; align-items: end; gap: 10px; }
+.institution-invite-form label { flex: 1; }
+.institution-invite-code { display: flex; align-items: center; justify-content: space-between; gap: 12px; grid-column: 1 / -1; padding: 12px 15px; border: 1px dashed #3657ff; background: #fffdf7; }
+.institution-invite-code span { display: grid; gap: 4px; }
+.institution-invite-code small { color: #3657ff; font-size: 9px; font-weight: 800; letter-spacing: .09em; }
+.institution-invite-code code { color: #25242a; font: 800 20px ui-monospace, monospace; letter-spacing: .12em; }
+.institution-invites-list { display: grid; gap: 6px; grid-column: 1 / -1; }
+.institution-invites-list > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 8px; border-top: 1px solid #dedbf3; color: #55535b; font-size: 10px; }
+.institution-invites-list button,.institution-member-list button { border: 0; background: none; color: #a33e34; font: 700 10px Poppins, sans-serif; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.institution-roster { margin-bottom: 22px; }
+.institution-member-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px; margin-top: 15px; }
+.institution-member-list > div { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; gap: 2px 9px; padding: 9px; border: 1px solid #e9e5dd; background: #fff; }
+.institution-member-avatar { display: grid; width: 30px; height: 30px; grid-row: span 2; place-items: center; border-radius: 50%; background: #c7f464; color: #25242a; font-weight: 800; }
+.institution-member-list strong { overflow: hidden; color: #25242a; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.institution-member-list span:not(.institution-member-avatar) { color: #65636a; font-size: 10px; }
+.institution-member-list button { grid-column: 2 / -1; justify-self: start; }
+.institution-section-title { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 28px 0 14px; }
+.institution-section-title h2 { margin: 4px 0; }
+.institution-section-title p { margin: 0; }
+.institution-count { padding: 6px 10px; border-radius: 20px; background: #c7f464; color: #25242a; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.institution-share-form { display: grid; gap: 15px; margin-bottom: 18px; padding: clamp(18px, 3vw, 26px); border: 1px solid #25242a; border-radius: 9px 9px 4px 9px; background: #ffd84d; box-shadow: 4px 5px 0 #25242a; }
+.institution-share-form h3 { margin: 5px 0; color: #25242a; font: 800 21px Montserrat, sans-serif; }
+.institution-share-form p { margin: 0; color: #514a2d; font-size: 11px; line-height: 1.5; }
+.institution-share-fields { display: grid; grid-template-columns: 1.2fr .8fr 1fr; gap: 12px; }
+.institution-inline-link { justify-self: start; border: 0; background: none; color: #2948df; font: 700 10px Poppins, sans-serif; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.institution-check { display: flex; align-items: flex-start; gap: 9px; color: #36343a; font-size: 11px; line-height: 1.5; }
+.institution-check input { flex: 0 0 auto; margin-top: 2px; accent-color: #3657ff; }
+.institution-empty-hint { margin: 0; font-size: 11px; }
+.institution-empty { display: grid; justify-items: center; padding: 38px 22px; border: 1px dashed #c9c6be; background: #fffdf7; text-align: center; }
+.institution-empty > span { color: #3657ff; font-size: 42px; }
+.institution-empty h3 { margin: 8px 0 3px; font: 800 18px Montserrat, sans-serif; }
+.institution-empty p { max-width: 480px; margin: 0; color: #65636a; font-size: 11px; line-height: 1.6; }
+.institution-plan-list { display: grid; gap: 15px; }
+.institution-plan-card { padding: clamp(18px, 3vw, 25px); border: 1px solid #dedbd2; border-radius: 10px 10px 4px 10px; background: #fffdf7; box-shadow: 3px 4px 0 rgb(37 36 42 / 7%); }
+.institution-plan-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.institution-alias { display: inline-flex; padding: 4px 8px; border-radius: 20px; background: #e6efff; color: #2948df; font: 800 9px ui-monospace, monospace; letter-spacing: .07em; }
+.institution-plan-card h3 { margin: 9px 0 4px; color: #25242a; font: 800 20px/1.2 Montserrat, sans-serif; }
+.institution-plan-card-head p { max-width: 650px; margin: 0; color: #5c5a60; font-size: 12px; line-height: 1.6; }
+.institution-status { display: grid; min-width: 150px; gap: 5px; color: #57545e; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.institution-status.status-active select { border-color: #c7f464; background: #f3f9dc; }
+.institution-status.status-review select { border-color: #ffd84d; background: #fff8d9; }
+.institution-status.status-completed select { border-color: #c9c6be; background: #f2f0eb; }
+.institution-status select:disabled { opacity: 1; color: #514f56; }
+.institution-plan-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 14px; padding: 10px 0; border-top: 1px solid #e9e5dd; color: #65636a; font-size: 10px; }
+.institution-strategies { margin: 3px 0 14px; padding: 10px 0; border-bottom: 1px solid #e9e5dd; }
+.institution-strategies summary { color: #2948df; font-size: 11px; font-weight: 700; cursor: pointer; }
+.institution-strategies ul { display: grid; gap: 8px; padding-left: 18px; }
+.institution-strategies li { color: #36343a; font-size: 11px; }
+.institution-strategies li span,.institution-strategies li small { display: block; margin-top: 3px; color: #65636a; line-height: 1.45; }
+.institution-updates-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.institution-updates-heading h4 { margin: 0; color: #25242a; font: 800 14px Montserrat, sans-serif; }
+.institution-updates-heading span { color: #747179; font-size: 10px; }
+.institution-updates ol { display: grid; gap: 8px; padding: 0; list-style: none; }
+.institution-updates ol li { padding: 11px 13px; border-left: 3px solid #3657ff; background: #eef0ff; }
+.institution-updates ol li > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5px 12px; color: #55535b; font-size: 9px; }
+.institution-updates ol li > div strong { color: #25242a; font-size: 10px; }
+.institution-updates ol li p { margin: 6px 0 0; color: #3e3c44; font-size: 11px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.institution-update-compose { display: grid; gap: 8px; margin-top: 12px; }
+.institution-update-compose > label { color: #34323a; font-size: 11px; font-weight: 700; }
+.institution-update-compose textarea { width: 100%; min-height: 80px; padding: 10px; border: 1px solid #c9c6be; border-radius: 5px; resize: vertical; font: 12px/1.5 Poppins, sans-serif; }
+.institution-update-compose > div { display: flex; justify-content: flex-end; gap: 10px; }
+.institution-update-compose select { width: auto; min-width: 130px; }
+.institution-more-tools { display: flex; align-items: center; gap: 14px; margin-top: 24px; padding: 18px 20px; border: 1px solid #dedbd2; background: #f1efff; }
+.institution-more-tools > div { flex: 1; }
+.institution-more-tools h2 { margin: 4px 0; font: 800 17px Montserrat, sans-serif; }
+.institution-more-tools p { margin: 0; color: #5d5b62; font-size: 10px; line-height: 1.5; }
+.institution-footnote { margin-top: 18px; padding: 12px 14px; border-top: 1px solid #dedbd2; color: #69676e; font-size: 10px; line-height: 1.6; }
+.institution-page button:focus-visible,.institution-page a:focus-visible { outline: 3px solid #3657ff; outline-offset: 3px; }
+.collab-primary-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.collab-section-heading a:not(.button) { color: #2948df; font-weight: 700; text-underline-offset: 3px; }
+@media (max-width: 800px) {
+  .institution-share-fields { grid-template-columns: 1fr 1fr; }
+  .institution-share-fields label:first-child { grid-column: 1 / -1; }
+  .institution-admin { grid-template-columns: 1fr; }
+  .institution-invite-form { max-width: 520px; }
+}
+@media (max-width: 620px) {
+  .institution-heading { align-items: flex-start; }
+  .institution-heading-mark { width: 68px; height: 68px; font-size: 44px; }
+  .institution-auth-grid,.institution-onboarding { grid-template-columns: 1fr; }
+  .institution-toolbar { align-items: flex-start; flex-direction: column; }
+  .institution-toolbar-actions { width: 100%; justify-content: space-between; }
+  .institution-invite-form { align-items: stretch; flex-direction: column; }
+  .institution-invite-code { align-items: flex-start; flex-direction: column; }
+  .institution-share-fields { grid-template-columns: 1fr; }
+  .institution-share-fields label:first-child { grid-column: auto; }
+  .institution-plan-card-head { flex-direction: column; }
+  .institution-status { width: 100%; }
+  .institution-more-tools { align-items: flex-start; flex-direction: column; }
+  .institution-more-tools .button { width: 100%; justify-content: center; }
 }

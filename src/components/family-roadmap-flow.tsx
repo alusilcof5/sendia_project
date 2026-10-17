@@ -6,7 +6,16 @@ import { familyAgeBands, familyFocuses, familyStages, parseFamilyRoadmap, type F
 import { familySources } from '@/lib/family-sources';
 import { PrivacyAlias } from '@/components/privacy-alias';
 
+type FamilyPath = 'roadmap' | 'school-talk' | 'home-situation';
+
+const familyPaths: { id: FamilyPath; number: string; title: string; description: string; next: string; symbol: string }[] = [
+  { id: 'roadmap', number: '01', title: 'Acabamos de recibir una identificación', description: 'Ordena dudas y piensa próximos pasos, sin tener que resolverlo todo hoy.', next: 'Crear una hoja de ruta', symbol: '↗' },
+  { id: 'school-talk', number: '02', title: 'Quiero hablar con el centro', description: 'Prepara preguntas y acuerdos concretos para conversar con docentes u orientación.', next: 'Preparar la conversación', symbol: '↔' },
+  { id: 'home-situation', number: '03', title: 'Hay algo que nos preocupa en casa', description: 'Describe una situación cotidiana y explora un paso pequeño que podáis revisar.', next: 'Explorar la situación', symbol: '⌂' },
+];
+
 export function FamilyRoadmapFlow() {
+  const [path, setPath] = useState<FamilyPath | null>(null);
   const [stage, setStage] = useState<FamilyStageId>('new-identification');
   const [focus, setFocus] = useState<FamilyFocusId>('first-steps');
   const [ageBand, setAgeBand] = useState('prefer-not');
@@ -40,18 +49,28 @@ export function FamilyRoadmapFlow() {
     } finally { setLoading(false); }
   };
 
-  const reset = () => { setRoadmap(null); setStep(1); setAdultConsent(false); setError(''); };
+  const choosePath = (next: FamilyPath) => {
+    setPath(next); setRoadmap(null); setError(''); setAdultConsent(false);
+    if (next === 'roadmap') { setStage('new-identification'); setFocus('first-steps'); setStep(1); }
+    if (next === 'school-talk') { setStage('school-conversation'); setFocus('school'); setStep(2); }
+    if (next === 'home-situation') { setStage('exploring-support'); setFocus('wellbeing'); setStep(2); }
+  };
+  const reset = () => { setPath(null); setRoadmap(null); setStep(1); setAdultConsent(false); setError(''); setContext(''); };
+  const selectedPath = familyPaths.find((item) => item.id === path);
 
   return <AppShell><div className="content family-page">
     <section className="family-hero">
-      <div className="family-hero-copy"><span className="case-label">UN ESPACIO PARA LAS FAMILIAS</span><h1>Recibiste una respuesta.<br/><em>¿Y ahora qué?</em></h1><p>Una hoja de ruta para ordenar tus preguntas y preparar próximos pasos, según el momento que está viviendo tu familia.</p><div className="family-ai-label"><span aria-hidden="true">✳</span><span><strong>Generada con inteligencia artificial.</strong> Son sugerencias informativas, no orientación profesional.</span></div></div>
+      <div className="family-hero-copy"><span className="case-label">UN ESPACIO PARA LAS FAMILIAS</span><h1>No tienes que resolverlo todo.<br/><em>Empieza por lo que necesitas.</em></h1><p>Elige una situación. SendIA te ayuda a ordenar preguntas y preparar un siguiente paso, a tu ritmo.</p><div className="family-ai-label"><span aria-hidden="true">✳</span><span><strong>La IA prepara sugerencias para que tú las valores.</strong> No sustituye orientación profesional.</span></div></div>
       <div className="family-hero-art" aria-hidden="true"><span className="family-route-line"/><span className="family-route-node family-node-start">HOY</span><span className="family-route-node family-node-middle">CONVERSAR</span><span className="family-route-node family-node-end">ELEGIR</span><span className="family-route-star">↗</span></div>
     </section>
 
-    <aside className="family-boundary" role="note"><strong>Antes de empezar</strong><span>SendIA no es un servicio profesional, psicológico ni clínico. No diagnostica, no interpreta informes y no sustituye al profesional que realizó la evaluación ni al equipo educativo. No subas informes ni compartas nombres, puntuaciones, centros o datos que identifiquen a tu hijo/a.</span></aside>
+    <aside className="family-boundary" role="note" aria-label="Límites de SendIA y cuidado de la privacidad"><span className="family-boundary-icon" aria-hidden="true">!</span><div className="family-boundary-copy"><strong>Una guía informativa, no un servicio profesional</strong><p>SendIA no es un servicio psicológico ni clínico. No diagnostica, no interpreta informes y no sustituye al profesional que realizó la evaluación ni al equipo educativo.</p><p className="family-boundary-privacy"><b>Para proteger la privacidad de tu hijo/a:</b> no subas informes ni compartas nombres, puntuaciones, centros o datos que permitan identificarle.</p></div></aside>
 
-    {!roadmap && <section className="family-wizard" aria-labelledby="family-wizard-title">
-      <div className="family-wizard-head"><div><span className="eyebrow">HOJA DE RUTA · PASO {step} DE 2</span><h2 id="family-wizard-title">{step === 1 ? '¿En qué momento estáis?' : '¿Qué os ayudaría más ahora?'}</h2><p>{step === 1 ? 'No hay una fase correcta. Elige la que más se parece a vuestra situación.' : 'La IA usará estas respuestas para preparar sugerencias iniciales que podéis tomar o dejar.'}</p></div><div className="family-step-indicator" aria-label={`Paso ${step} de 2`}><span className={step === 1 ? 'current' : 'complete'}>{step === 1 ? '01' : '✓'}</span><i/><span className={step === 2 ? 'current' : ''}>02</span></div></div>
+    {!path && !roadmap && <section className="family-path-picker" aria-labelledby="family-path-title"><div className="family-path-heading"><span className="eyebrow">¿QUÉ NECESITAS HOY?</span><h2 id="family-path-title">Elige por dónde empezar</h2><p>No hay un orden obligatorio. Entra en la opción que se parece más a lo que estás viviendo.</p></div><div className="family-path-grid">{familyPaths.map((item) => <button type="button" key={item.id} className={`family-path-card family-path-${item.id}`} onClick={() => choosePath(item.id)}><span className="family-path-top"><span>{item.number} · PARA FAMILIAS</span><span className="family-path-symbol" aria-hidden="true">{item.symbol}</span></span><strong>{item.title}</strong><p>{item.description}</p><span className="family-path-next">{item.next} <span aria-hidden="true">→</span></span></button>)}</div><p className="family-path-note">Puedes volver y elegir otra opción en cualquier momento. No se crea un historial.</p></section>}
+
+    {path && !roadmap && <section className="family-wizard" aria-labelledby="family-wizard-title">
+      <div className="family-wizard-head"><div><span className="eyebrow">{path === 'roadmap' ? `HOJA DE RUTA · PASO ${step} DE 2` : `${selectedPath?.title.toUpperCase()} · PASO 1 DE 1`}</span><h2 id="family-wizard-title">{step === 1 ? '¿En qué momento estáis?' : path === 'school-talk' ? '¿Qué queréis aclarar con el centro?' : path === 'home-situation' ? '¿Qué os ayudaría más ahora?' : '¿Qué os ayudaría más ahora?'}</h2><p>{step === 1 ? 'No hay una fase correcta. Elige la que más se parece a vuestra situación.' : path === 'school-talk' ? 'Elige el tema principal. Después podrás añadir contexto opcional y recibir preguntas para preparar la conversación.' : path === 'home-situation' ? 'Elige qué quieres comprender mejor. Después podrás describir la situación sin incluir datos que identifiquen a tu hijo/a.' : 'La IA usará estas respuestas para preparar sugerencias iniciales que podéis tomar o dejar.'}</p></div>{path === 'roadmap' && <div className="family-step-indicator" aria-label={`Paso ${step} de 2`}><span className={step === 1 ? 'current' : 'complete'}>{step === 1 ? '01' : '✓'}</span><i/><span className={step === 2 ? 'current' : ''}>02</span></div>}</div>
+      <div className="family-selected-path"><span aria-hidden="true">{selectedPath?.symbol}</span><div><strong>{selectedPath?.title}</strong><small>{path === 'roadmap' ? 'Recorrido guiado para ordenar próximos pasos.' : path === 'school-talk' ? 'Recorrido breve para preparar el diálogo con el centro.' : 'Recorrido breve para pensar una situación cotidiana.'}</small></div><button type="button" onClick={reset}>Cambiar opción</button></div>
 
       {step === 1 && <div className="family-stage-grid">{familyStages.map((item, index) => <button key={item.id} type="button" className={`family-choice ${stage === item.id ? 'selected' : ''}`} aria-pressed={stage === item.id} onClick={() => setStage(item.id)}><span className="family-choice-number">0{index + 1}</span><strong>{item.label}</strong><span className="family-choice-check" aria-hidden="true">{stage === item.id ? '✓' : '＋'}</span></button>)}</div>}
 
@@ -64,12 +83,12 @@ export function FamilyRoadmapFlow() {
       </div>}
 
       {error && <p className="family-error" role="alert">{error}</p>}
-      <div className="family-wizard-actions">{step === 2 && <button type="button" className="button button-secondary" onClick={() => { setStep(1); setError(''); }}>← Volver</button>}{step === 1 ? <button type="button" className="button button-primary" onClick={() => { setStep(2); setError(''); }}>Continuar <span>→</span></button> : <button type="button" className="button button-primary" disabled={!adultConsent || loading} onClick={() => void generate()}>{loading ? 'Preparando sugerencias…' : 'Generar mi hoja de ruta'} <span aria-hidden="true">→</span></button>}</div>
+      <div className="family-wizard-actions">{step === 2 && <button type="button" className="button button-secondary" onClick={() => path === 'roadmap' ? (setStep(1), setError('')) : reset()}>{path === 'roadmap' ? '← Volver' : '← Elegir otra opción'}</button>}{step === 1 ? <button type="button" className="button button-primary" onClick={() => { setStep(2); setError(''); }}>Continuar <span>→</span></button> : <button type="button" className="button button-primary" disabled={!adultConsent || loading} onClick={() => void generate()}>{loading ? 'Preparando sugerencias…' : path === 'school-talk' ? 'Preparar mi conversación' : path === 'home-situation' ? 'Explorar esta situación' : 'Generar mi hoja de ruta'} <span aria-hidden="true">→</span></button>}</div>
       <p className="family-no-save">SendIA no almacena tus respuestas ni crea un historial de hojas. Puedes generar otra si cambia vuestra situación.</p>
     </section>}
 
     {roadmap && <section className="family-roadmap-result" aria-labelledby="family-result-title">
-      <div className="family-result-top"><div><span className="eyebrow">BORRADOR GENERADO POR IA · REVÍSALO CON CALMA</span><h2 id="family-result-title">Una hoja para vuestro momento.</h2><p>{roadmap.summary}</p><span className="family-context-chip">{selectedStage.label}</span></div><div className="family-result-actions"><button className="button button-secondary" onClick={() => window.print()}>Imprimir / guardar PDF</button><button className="family-text-button" onClick={reset}>Crear otra hoja</button></div></div>
+      <div className="family-result-top"><div><span className="eyebrow">BORRADOR GENERADO POR IA · REVÍSALO CON CALMA</span><h2 id="family-result-title">{path === 'school-talk' ? 'Una conversación mejor preparada.' : path === 'home-situation' ? 'Un primer paso para esta situación.' : 'Una hoja para vuestro momento.'}</h2><p>{roadmap.summary}</p><span className="family-context-chip">{selectedStage.label}</span></div><div className="family-result-actions"><button className="button button-secondary" onClick={() => window.print()}>Imprimir / guardar PDF</button><button className="family-text-button" onClick={reset}>Elegir otra opción</button></div></div>
       <div className="family-result-columns">
         <section className="family-roadmap-phase family-now"><span className="family-phase-number">01</span><div><span className="eyebrow">SIN PRISA · PRIMEROS PASOS</span><h3>Lo que podéis hacer ahora</h3></div><div className="family-step-list">{roadmap.firstSteps.map((item, index) => <article key={`${item.title}-${index}`}><span>0{index + 1}</span><div><h4>{item.title}</h4><p>{item.action}</p><small>{item.reason}</small></div></article>)}</div></section>
         <section className="family-roadmap-phase family-later"><span className="family-phase-number">02</span><div><span className="eyebrow">CUANDO OS VENGA BIEN</span><h3>Qué podéis conversar y revisar</h3></div><div className="family-step-list">{roadmap.nextSteps.map((item, index) => <article key={`${item.title}-${index}`}><span>0{index + 1}</span><div><h4>{item.title}</h4><p>{item.action}</p><small>{item.reason}</small></div></article>)}</div></section>

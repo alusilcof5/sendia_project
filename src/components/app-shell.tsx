@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 import { copy } from '@/lib/i18n/es-419';
 import sendiaLogo from '@/app/images/logo.png';
 
-type NavIconName = 'home' | 'explore' | 'family' | 'create' | 'plans' | 'team' | 'building' | 'private' | 'impact' | 'ideas';
+type NavIconName = 'home' | 'explore' | 'family' | 'create' | 'plans' | 'team' | 'building' | 'private' | 'impact' | 'ideas' | 'workspace';
 
 const items: { href: string; label: string; icon: NavIconName }[] = [
   { href: '/espacio', label: 'Inicio', icon: 'home' },
@@ -27,6 +27,7 @@ function NavGlyph({ name }: { name: NavIconName }) {
     {name === 'private' && <><rect x="4.5" y="10" width="15" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/><circle cx="12" cy="14" r=".7" fill="currentColor"/></>}
     {name === 'impact' && <><path d="M4 20V5M4 20h17"/><path d="m7 15 4-4 3 2 5-6"/><circle cx="19" cy="7" r="1.5"/><path d="M7 4h3"/></>}
     {name === 'ideas' && <><path d="M9 18h6M10 21h4M8.2 14.8a7 7 0 1 1 7.6 0c-.9.6-1.3 1.4-1.4 2.2h-4.8c-.1-.8-.5-1.6-1.4-2.2Z"/><path d="M12 1.5v2M3.7 5 5 6.3M20.3 5 19 6.3"/></>}
+    {name === 'workspace' && <><path d="M3 21V8l9-5 9 5v13"/><path d="M7 21v-6h10v6M8 10h.01M12 10h.01M16 10h.01M12 15v6"/><path d="M2 21h20"/></>}
   </svg>;
 }
 
@@ -35,7 +36,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isClassroomSection = pathname.startsWith('/comprender/aula') || pathname.startsWith('/crear') || pathname.startsWith('/planes');
   const isCenterSection = pathname.startsWith('/comprender/centro') || pathname.startsWith('/colaboracion');
   const active = isClassroomSection ? '/comprender/aula' : isCenterSection ? '/comprender/centro' : pathname === '/familias' || pathname.startsWith('/comprender/casa') ? '/comprender/casa' : pathname;
-  const current = pathname === '/familias' ? 'Hoja de ruta' : pathname.startsWith('/comprender/centro') ? 'Comprender · Centro' : pathname.startsWith('/comprender/casa') ? 'Comprender · Familia' : pathname.startsWith('/comprender/aula') ? 'Comprender · Aula' : pathname.startsWith('/crear') ? 'Crear' : pathname.startsWith('/planes') ? 'Mis planes' : pathname.startsWith('/colaboracion/ideas') ? 'Lluvia de ideas' : pathname.startsWith('/colaboracion') ? 'Colaboración' : items.find((item) => item.href === active)?.label ?? 'SendIA';
+  const current = pathname === '/familias' ? 'Hoja de ruta' : pathname.startsWith('/comprender/centro') ? 'Comprender · Centro' : pathname.startsWith('/comprender/casa') ? 'Comprender · Familia' : pathname.startsWith('/comprender/aula') ? 'Comprender · Aula' : pathname.startsWith('/crear') ? 'Crear' : pathname.startsWith('/planes') ? 'Mis planes' : pathname.startsWith('/colaboracion/ideas') ? 'Lluvia de ideas' : pathname.startsWith('/colaboracion/equipo') ? 'Espacio de equipo' : pathname.startsWith('/colaboracion') ? 'Colaboración' : items.find((item) => item.href === active)?.label ?? 'SendIA';
   return <div className="app">
     <aside className="sidebar" aria-label="Navegación principal">
       <Link href="/" className="brand" aria-label="SendIA, volver al inicio"><Image className="sendia-logo sendia-logo-sidebar" src={sendiaLogo} alt="SendIA" priority/></Link>
@@ -44,7 +45,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link href="/comprender/aula" className={`nav-link nav-link-sub ${isClassroomSection ? 'active' : ''}`} aria-current={pathname === '/comprender/aula' ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="explore"/></span><span>Desde el aula</span></Link>
         <div className="nav-subgroup-home"><Link href="/crear" className={`nav-link nav-link-sub nav-link-home ${pathname.startsWith('/crear') ? 'active' : ''}`} aria-current={pathname.startsWith('/crear') ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="create"/></span><span>Crear</span></Link><Link href="/planes/plan-aula" className={`nav-link nav-link-sub nav-link-home ${pathname.startsWith('/planes') ? 'active' : ''}`} aria-current={pathname.startsWith('/planes') ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="plans"/></span><span>Mis planes</span></Link></div>
         <Link href="/comprender/centro" className={`nav-link nav-link-sub ${isCenterSection ? 'active' : ''}`} aria-current={pathname === '/comprender/centro' ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="building"/></span><span>Desde el centro</span></Link>
-        <div className="nav-subgroup-home"><Link href="/colaboracion" className={`nav-link nav-link-sub nav-link-home ${pathname === '/colaboracion' ? 'active' : ''}`} aria-current={pathname === '/colaboracion' ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="team"/></span><span>Colaboración</span></Link><Link href="/colaboracion/ideas" className={`nav-link nav-link-sub nav-link-home nav-link-deeper ${pathname.startsWith('/colaboracion/ideas') ? 'active' : ''}`} aria-current={pathname.startsWith('/colaboracion/ideas') ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="ideas"/></span><span>Lluvia de ideas</span></Link></div>
+        <div className="nav-subgroup-home"><Link href="/colaboracion" className={`nav-link nav-link-sub nav-link-home ${pathname === '/colaboracion' ? 'active' : ''}`} aria-current={pathname === '/colaboracion' ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="team"/></span><span>Colaboración</span></Link><Link href="/colaboracion/equipo" className={`nav-link nav-link-sub nav-link-home ${pathname.startsWith('/colaboracion/equipo') ? 'active' : ''}`} aria-current={pathname.startsWith('/colaboracion/equipo') ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="workspace"/></span><span>Espacio de equipo</span></Link><Link href="/colaboracion/ideas" className={`nav-link nav-link-sub nav-link-home nav-link-deeper ${pathname.startsWith('/colaboracion/ideas') ? 'active' : ''}`} aria-current={pathname.startsWith('/colaboracion/ideas') ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="ideas"/></span><span>Lluvia de ideas</span></Link></div>
         <Link href="/comprender/casa" className={`nav-link nav-link-sub ${active === '/comprender/casa' ? 'active' : ''}`} aria-current={pathname === '/comprender/casa' ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="family"/></span><span>Desde casa</span></Link>
         <div className="nav-subgroup-home"><Link href="/familias" className={`nav-link nav-link-sub nav-link-home ${pathname === '/familias' ? 'active' : ''}`} aria-current={pathname === '/familias' ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="family"/></span><span>Hoja de ruta</span></Link></div>
       </div>}</div>)}</nav>

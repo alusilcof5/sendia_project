@@ -3,6 +3,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 let singleton: SupabaseClient | null = null;
+let institutionSingleton: SupabaseClient | null = null;
 
 export function supabaseBrowserClient(): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -10,6 +11,17 @@ export function supabaseBrowserClient(): SupabaseClient | null {
   if (!url || !key) return null;
   if (!singleton) singleton = createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
   return singleton;
+}
+
+/** Separate verified-email session so institutional access never replaces a brainstorm's anonymous identity. */
+export function supabaseInstitutionClient(): SupabaseClient | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  if (!institutionSingleton) institutionSingleton = createClient(url, key, {
+    auth: { storageKey: 'sendia-institution-auth-v1', persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+  });
+  return institutionSingleton;
 }
 
 export async function ensureAnonymousSession(client: SupabaseClient) {

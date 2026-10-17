@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { FamilyRoadmapFlow } from '@/components/family-roadmap-flow';
 
 export const metadata: Metadata = {
-  title: 'Hoja de ruta familiar · ¿Y ahora qué? | SendIA',
-  description: 'Una hoja de ruta informativa generada con IA para ayudar a familias a ordenar preguntas y preparar próximos pasos tras una identificación de altas capacidades.',
+  title: 'Acompañamiento familiar · SendIA',
+  description: 'Tres recorridos para familias: orientarse tras una identificación, preparar una conversación con el centro o explorar una situación cotidiana.',
 };
 
 export default function FamiliesPage() {

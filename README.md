@@ -20,12 +20,14 @@ npm run dev
 - `/planes/plan-aula`: revisión y seguimiento de propuestas aprobadas.
 - `/beta/docentes/acceso` y `/beta/docentes/casos`: área de demostración docente separada, con doce casos ficticios. Las credenciales visibles en la pantalla son solo una simulación de acceso; no constituyen autenticación ni protegen datos reales.
 - `/colaboracion`: preparación local de acuerdos entre estudiante, familia y escuela. Guarda perspectivas, un paso común, responsable e indicador en el navegador actual; permite preparar un resumen para compartir manualmente desde el dispositivo. Aún no sincroniza entre cuentas ni dispositivos.
+- `/colaboracion/equipo`: espacio institucional con acceso por correo, invitaciones que asignan roles, planes compartidos de forma explícita y seguimiento común. Requiere aplicar la migración `supabase/migrations/202610180001_institutional_workspace.sql`; instrucciones en [docs/ESPACIO-EQUIPO.md](docs/ESPACIO-EQUIPO.md).
+- `/colaboracion/ideas`: lluvia de ideas sincronizada con sus propios códigos de invitación. Es un módulo separado del espacio institucional.
 - `/impacto`: cuestionario exploratorio de pilotaje, datos locales y exportaciones CSV.
 - La interfaz usa español latinoamericano neutro (`es-419`); textos, glosario, países y formatos de fecha están centralizados en `src/lib/i18n/es-419.ts`. La estructura admite sumar diccionarios regionales sin cambiar el idioma actual.
 
 ## Arquitectura y recorrido
 
-Next.js App Router organiza las páginas y rutas API. Los componentes de interfaz viven en `src/components`; esquemas, planes locales, privacidad y textos regionales en `src/lib`. No se agrega una base de datos: los planes aprobados y las respuestas del pilotaje quedan en el almacenamiento local del navegador.
+Next.js App Router organiza las páginas y rutas API. Los componentes de interfaz viven en `src/components`; esquemas, planes locales, privacidad y textos regionales en `src/lib`. Los planes de la experiencia personal y las respuestas del pilotaje quedan en el navegador. Supabase se usa de forma separada para la lluvia de ideas y, al aplicar la migración institucional, para los equipos y planes que sus miembros deciden compartir.
 
 ```mermaid
 flowchart LR
