@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       if (pdf.size === 0 || pdf.size > 8 * 1024 * 1024) return NextResponse.json({ error: 'El PDF debe pesar entre 1 byte y 8 MB.' }, { status: 413 });
     } else body = await request.json();
   } catch { return NextResponse.json({ error: 'Solicitud o documento no válido.' }, { status: 400 }); }
-  if (!isStringRecord(body) || body.adultConsent !== true || !modes.includes(body.mode as typeof modes[number]) ||
+  if (!isStringRecord(body) || body.adultConsent !== true || ((pdf || (typeof body.documentText === 'string' && body.documentText.trim())) && body.documentPrivacyConfirmed !== true) || !modes.includes(body.mode as typeof modes[number]) ||
     !validText(body.stage, 100, true) || !validText(body.area, 100, true) || !validText(body.objective, 800, true) ||
     (body.mode !== 'crear' && !validText(body.existingTask, 3000, true)) || (body.mode === 'modificar' && !validText(body.requestedChange, 1200, true)) ||
     !validText(body.existingTask, 3000) || !validText(body.requestedChange, 1200) || !validText(body.constraints, 800) || !validText(body.interests, 800) || !validText(body.documentText, 30_000)) {

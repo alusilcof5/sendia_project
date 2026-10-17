@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { AppShell } from '@/components/app-shell';
 import { familyAgeBands, familyFocuses, familyStages, parseFamilyRoadmap, type FamilyFocusId, type FamilyRoadmap, type FamilyStageId } from '@/lib/family-roadmap';
 import { familySources } from '@/lib/family-sources';
+import { PrivacyAlias } from '@/components/privacy-alias';
 
 export function FamilyRoadmapFlow() {
   const [stage, setStage] = useState<FamilyStageId>('new-identification');
@@ -56,9 +57,10 @@ export function FamilyRoadmapFlow() {
 
       {step === 2 && <div className="family-details-step">
         <fieldset className="family-focus-field"><legend>¿Cuál es vuestra pregunta más urgente?</legend><div className="family-focus-grid">{familyFocuses.map((item) => <label key={item.id} className={focus === item.id ? 'selected' : ''}><input type="radio" name="family-focus" value={item.id} checked={focus === item.id} onChange={() => setFocus(item.id)}/><span>{item.label}</span></label>)}</div></fieldset>
-        <div className="family-optional-context"><label htmlFor="family-age">Edad aproximada <span>(opcional)</span><select id="family-age" value={ageBand} onChange={(event) => setAgeBand(event.target.value)}>{familyAgeBands.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label><label htmlFor="family-context">¿Quieres añadir algo de contexto? <span>(opcional)</span><textarea id="family-context" value={context} maxLength={700} onChange={(event) => setContext(event.target.value)} placeholder="Por ejemplo: qué os gustaría aclarar en la próxima conversación con el centro. No incluyas nombres ni detalles del informe."/><small>{context.length}/700 · No escribas datos personales, puntuaciones ni información clínica.</small></label></div>
+        <PrivacyAlias subject="tu hijo/a"/>
+        <div className="family-optional-context"><label htmlFor="family-age">Edad aproximada <span>(opcional)</span><select id="family-age" value={ageBand} onChange={(event) => setAgeBand(event.target.value)}>{familyAgeBands.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label><label htmlFor="family-context">¿Quieres añadir algo de contexto? <span>(opcional)</span><textarea id="family-context" value={context} maxLength={700} onChange={(event) => setContext(event.target.value)} placeholder="Por ejemplo: qué os gustaría aclarar en la próxima conversación con el centro. Si hace falta, usa el alias; no incluyas nombres ni detalles del informe."/><small>{context.length}/700 · No escribas datos personales, puntuaciones ni información clínica.</small></label></div>
         <details className="family-data-details"><summary>¿Qué se enviará a Gemini?</summary><p>La fase que seleccionaste («{selectedStage.label}»), el tema elegido («{selectedFocus.label}»), el tramo de edad si lo indicaste y el contexto opcional. Se envían para generar la hoja y no se guardan en SendIA.</p></details>
-        <label className="family-consent"><input type="checkbox" checked={adultConsent} onChange={(event) => setAdultConsent(event.target.checked)}/><span>Soy una persona adulta. He evitado datos que identifiquen a mi hijo/a y acepto enviar estas respuestas a Gemini para generar sugerencias.</span></label>
+        <label className="family-consent"><input type="checkbox" checked={adultConsent} onChange={(event) => setAdultConsent(event.target.checked)}/><span>Soy una persona adulta. No he escrito el nombre real ni datos que identifiquen a mi hijo/a; acepto enviar estas respuestas a Gemini para generar sugerencias.</span></label>
       </div>}
 
       {error && <p className="family-error" role="alert">{error}</p>}

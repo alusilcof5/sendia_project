@@ -1,6 +1,13 @@
 export type IdentifierKind = 'correo' | 'teléfono' | 'documento de identidad' | 'dirección' | 'institución educativa' | 'presentación de persona' | 'nombre compuesto';
 export type DirectIdentifier = { kind: IdentifierKind; value: string };
 
+/** Creates a random, non-semantic case label locally in the browser. It is not an anonymizer. */
+export function createCaseAlias(): string {
+  const bytes = new Uint8Array(3);
+  globalThis.crypto.getRandomValues(bytes);
+  return `caso-${Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+}
+
 const patterns: { kind: IdentifierKind; expression: RegExp }[] = [
   { kind: 'correo', expression: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi },
   { kind: 'teléfono', expression: /\b(?:\+34[\s.-]?)?[6789]\d{2}(?:[\s.-]?\d{3}){2}\b/g },

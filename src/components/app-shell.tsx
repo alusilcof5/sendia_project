@@ -7,10 +7,11 @@ import type { ReactNode } from 'react';
 import { copy } from '@/lib/i18n/es-419';
 import sendiaLogo from '@/app/images/logo.png';
 
-type NavIconName = 'home' | 'explore' | 'family' | 'create' | 'plans' | 'team' | 'building' | 'impact' | 'ideas';
+type NavIconName = 'home' | 'explore' | 'family' | 'create' | 'plans' | 'team' | 'building' | 'private' | 'impact' | 'ideas';
 
 const items: { href: string; label: string; icon: NavIconName }[] = [
   { href: '/espacio', label: 'Inicio', icon: 'home' },
+  { href: '/espacio-seguro', label: 'Espacio privado', icon: 'private' },
   { href: '/comprender', label: 'Comprender', icon: 'explore' },
 ];
 
@@ -23,6 +24,7 @@ function NavGlyph({ name }: { name: NavIconName }) {
     {name === 'plans' && <><rect x="5" y="4.5" width="15" height="17" rx="2"/><path d="M9 4.5V3h7v1.5M8.5 10h8M8.5 14h8M8.5 18h5"/><path d="m2.5 10 1 1 1.8-2M2.5 15l1 1 1.8-2"/></>}
     {name === 'team' && <><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14 15.5a4.4 4.4 0 0 1 6.5 3.5"/><path d="M13 5.3a3 3 0 0 1 4.3-.3"/></>}
     {name === 'building' && <><path d="M4 21V5.5L12 2l8 3.5V21"/><path d="M2 21h20M8 8h1M15 8h1M8 12h1M15 12h1M8 16h1M15 16h1M10.5 21v-3.5h3V21"/><path d="M2 5.5 12 2l10 3.5"/></>}
+    {name === 'private' && <><rect x="4.5" y="10" width="15" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/><circle cx="12" cy="14" r=".7" fill="currentColor"/></>}
     {name === 'impact' && <><path d="M4 20V5M4 20h17"/><path d="m7 15 4-4 3 2 5-6"/><circle cx="19" cy="7" r="1.5"/><path d="M7 4h3"/></>}
     {name === 'ideas' && <><path d="M9 18h6M10 21h4M8.2 14.8a7 7 0 1 1 7.6 0c-.9.6-1.3 1.4-1.4 2.2h-4.8c-.1-.8-.5-1.6-1.4-2.2Z"/><path d="M12 1.5v2M3.7 5 5 6.3M20.3 5 19 6.3"/></>}
   </svg>;
@@ -46,7 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link href="/comprender/casa" className={`nav-link nav-link-sub ${active === '/comprender/casa' ? 'active' : ''}`} aria-current={pathname === '/comprender/casa' ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="family"/></span><span>Desde casa</span></Link>
         <div className="nav-subgroup-home"><Link href="/familias" className={`nav-link nav-link-sub nav-link-home ${pathname === '/familias' ? 'active' : ''}`} aria-current={pathname === '/familias' ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="family"/></span><span>Hoja de ruta</span></Link></div>
       </div>}</div>)}</nav>
-      <div className="sidebar-bottom"><div className="privacy-note"><strong>Un espacio cuidado</strong>La información de demostración es ficticia. {copy.product.noDiagnosis}<Link href="/datos">Cómo cuidamos los datos →</Link></div><div className="profile"><div className="avatar" aria-hidden="true">MR</div><div><div className="profile-name">Marta Rivas · Docente</div><div className="profile-role">Perfil ficticio · demostración</div></div></div></div>
+      <div className="sidebar-bottom"><div className="privacy-note"><strong>Protege la identidad</strong>Usa un alias ficticio. No escribas nombres ni datos que identifiquen a estudiantes. {copy.product.noDiagnosis}<Link href="/datos">Cómo cuidamos los datos →</Link></div><div className="profile"><div className="avatar" aria-hidden="true">MR</div><div><div className="profile-name">Marta Rivas · Docente</div><div className="profile-role">Perfil ficticio · demostración</div></div></div></div>
     </aside>
     <main className="main"><header className="topbar"><div className="crumb">SendIA <span> / {current}</span></div><div className="top-actions"><span className="demo-pill">◈ &nbsp;Entorno de demostración</span></div></header>{children}</main>
   </div>;

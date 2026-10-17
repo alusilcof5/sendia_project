@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/app-shell';
 import { parseCreatedActivity, parseSavedActivity, type ActivityVariant, type CreatedActivity } from '@/lib/created-activity';
+import { PrivacyAlias } from '@/components/privacy-alias';
 
 const storageKey = 'sendia-created-activities-v1';
 const routeLabels: Record<ActivityVariant['route'], string> = { representacion: 'Otra forma de acceder', expresion: 'Otra forma de demostrarlo', profundizacion: 'Más profundidad o elección' };
@@ -26,6 +27,7 @@ export function ActivityCreator() {
   const [sourceDocument, setSourceDocument] = useState<File | null>(null);
   const [documentText, setDocumentText] = useState('');
   const [consent, setConsent] = useState(false);
+  const [documentPrivacyConfirmed, setDocumentPrivacyConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -37,10 +39,10 @@ export function ActivityCreator() {
   const activeWorkflowStep = !current ? 1 : reviewConfirmed ? 3 : 2;
 
   const create = async () => {
-    if (!consent || !area.trim() || !objective.trim()) return;
+    if (!consent || (sourceDocument && !documentPrivacyConfirmed) || !area.trim() || !objective.trim()) return;
     setLoading(true); setError(''); setMessage(''); setCurrent(null);
     try {
-      const payload = { mode, stage, area, objective, existingTask, requestedChange, constraints, interests, documentText, adultConsent: consent };
+      const payload = { mode, stage, area, objective, existingTask, requestedChange, constraints, interests, documentText, adultConsent: consent, documentPrivacyConfirmed };
       let response: Response;
       if (sourceDocument && (sourceDocument.type === 'application/pdf' || sourceDocument.name.toLowerCase().endsWith('.pdf'))) {
         const form = new FormData(); form.set('payload', JSON.stringify(payload)); form.set('document', sourceDocument);
@@ -82,7 +84,7 @@ export function ActivityCreator() {
   const openSaved = (item: CreatedActivity) => { setCurrent(item); setMode(item.mode); setStage(item.stage); setArea(item.area); setObjective(item.objective); setReviewConfirmed(false); setMessage('Actividad recuperada. Revísala antes de descargar o guardar de nuevo.'); };
   const remove = (id: string) => { const next = saved.filter((item) => item.id !== id); localStorage.setItem(storageKey, JSON.stringify(next)); setSaved(next); if (current?.id === id) setCurrent(null); };
   const selectDocument = async (file?: File) => {
-    setSourceDocument(null); setDocumentText(''); setConsent(false); setError(''); setMessage('');
+    setSourceDocument(null); setDocumentText(''); setConsent(false); setDocumentPrivacyConfirmed(false); setError(''); setMessage('');
     if (!file) return;
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     const isText = ['.txt', '.md'].some((extension) => file.name.toLowerCase().endsWith(extension)) || file.type === 'text/plain' || file.type === 'text/markdown';
@@ -116,17 +118,19 @@ export function ActivityCreator() {
     <div className="creator-layout"><section className="creator-form panel" aria-labelledby="creator-form-title">
       <div className="panel-heading"><div><span className="eyebrow">TU MESA DE DISEÑO</span><h2 id="creator-form-title">¿Cómo quieres empezar?</h2><p>Elige una entrada. Después solo completarás lo necesario.</p></div></div>
       <div className="creator-mode-grid" role="group" aria-label="Tipo de trabajo"><button type="button" className={mode === 'crear' ? 'active' : ''} aria-pressed={mode === 'crear'} onClick={() => setMode('crear')}><span className="creator-mode-icon">✳</span><b>Crear</b><span>Partir de una meta de aprendizaje.</span></button><button type="button" className={mode === 'adaptar' ? 'active' : ''} aria-pressed={mode === 'adaptar'} onClick={() => setMode('adaptar')}><span className="creator-mode-icon">↗</span><b>Adaptar</b><span>Abrir otras formas de participar y demostrar.</span></button><button type="button" className={mode === 'modificar' ? 'active' : ''} aria-pressed={mode === 'modificar'} onClick={() => setMode('modificar')}><span className="creator-mode-icon">↻</span><b>Modificar</b><span>Cambiar algo concreto de la tarea actual.</span></button></div>
+      <PrivacyAlias/>
       <div className="creator-fields"><label>Etapa<select className="textarea" value={stage} onChange={(event) => setStage(event.target.value)}><option>Educación primaria</option><option>Educación secundaria</option><option>Formación técnico profesional</option><option>Educación superior</option><option>Otra etapa</option></select></label><label>Área o asignatura<input className="textarea" maxLength={100} value={area} onChange={(event) => setArea(event.target.value)} placeholder="Ej.: ciencias, lengua, matemática"/></label>
         <label className="creator-full">Meta de aprendizaje<input className="textarea" maxLength={800} value={objective} onChange={(event) => setObjective(event.target.value)} placeholder="¿Qué quieres que el grupo aprenda o pueda demostrar?"/><small>La IA no inventará la meta ni la cambiará para ajustarla a una actividad.</small></label>
         {mode !== 'crear' && <label className="creator-full">La actividad que ya tienes <span className="optional-label">(necesaria para adaptarla)</span><textarea className="textarea" maxLength={3000} value={existingTask} onChange={(event) => setExistingTask(event.target.value)} placeholder="Pega la consigna o describe brevemente la tarea. Quita nombres y datos personales."/></label>}
         {mode !== 'crear' && <label className="creator-full">{mode === 'modificar' ? '¿Qué quieres cambiar?' : '¿Qué te gustaría abrir o facilitar?'} <span className="optional-label">{mode === 'modificar' ? '(necesario)' : '(opcional)'}</span><textarea className="textarea" maxLength={1200} value={requestedChange} onChange={(event) => setRequestedChange(event.target.value)} placeholder="Ej.: ofrecer una opción visual, permitir otra forma de explicar o reducir la espera…"/></label>}
         <details className="creator-extra-details creator-full"><summary>Añadir contexto opcional: tiempo, recursos o intereses</summary><div className="creator-fields"><label>Tiempo, materiales o límites<textarea className="textarea" maxLength={800} value={constraints} onChange={(event) => setConstraints(event.target.value)} placeholder="Tiempo disponible, materiales cotidianos, trabajo individual o en equipo…"/></label><label>Intereses o fortalezas expresados<textarea className="textarea" maxLength={800} value={interests} onChange={(event) => setInterests(event.target.value)} placeholder="Solo información general y explícita, sin identificar a nadie."/></label></div></details>
-        <label className="creator-document creator-full"><strong>¿Tienes un material que quieras usar?</strong><span className="optional-label">Opcional · puedes adjuntar un solo documento</span><input type="file" accept=".pdf,.txt,.md,application/pdf,text/plain,text/markdown" onChange={(event) => { void selectDocument(event.target.files?.[0]); event.currentTarget.value = ''; }}/><small>PDF hasta 8 MB o TXT/Markdown hasta 100 KB. Al adjuntarlo, su contenido se envía a Gemini. Anonimízalo antes de subirlo.</small>{sourceDocument && <span className="creator-file-chip"><b>{sourceDocument.name}</b><button type="button" onClick={() => selectDocument(undefined)}>Quitar documento</button></span>}</label>
+        <label className="creator-document creator-full"><strong>¿Tienes un material que quieras usar?</strong><span className="optional-label">Opcional · puedes adjuntar un solo documento</span><input type="file" accept=".pdf,.txt,.md,application/pdf,text/plain,text/markdown" onChange={(event) => { void selectDocument(event.target.files?.[0]); event.currentTarget.value = ''; }}/><small>PDF hasta 8 MB o TXT/Markdown hasta 100 KB. Se envía completo a Gemini. Usa un alias y revisa todo el documento: SendIA no puede detectar ni borrar nombres dentro de un PDF.</small>{sourceDocument && <span className="creator-file-chip"><b>{sourceDocument.name}</b><button type="button" onClick={() => selectDocument(undefined)}>Quitar documento</button></span>}</label>
+        {sourceDocument && <label className="creator-document-check creator-full"><input type="checkbox" checked={documentPrivacyConfirmed} onChange={(event) => setDocumentPrivacyConfirmed(event.target.checked)}/><span>He revisado el documento completo y he retirado nombres, centros, datos de contacto, identificadores e información que permita reconocer a un estudiante.</span></label>}
       </div>
       <aside className="creator-safety"><b>Un criterio importante</b><p>No hace falta indicar que un estudiante tiene AACC ni otra condición. Describe la meta, lo que observas y qué opción educativa quieres explorar. SENDIA no asignará necesidades por una etiqueta.</p></aside>
-      <label className="ai-consent creator-consent"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)}/><span>Soy una persona adulta, no he incluido datos identificativos y acepto enviar estos campos a Gemini para preparar la propuesta.</span></label>
+      <label className="ai-consent creator-consent"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)}/><span>Soy una persona adulta, usé alias en lugar de nombres reales, revisé que no haya datos identificativos y acepto enviar estos campos a Gemini para preparar la propuesta.</span></label>
       <details className="send-preview"><summary>Ver la información que se enviará</summary><p>El documento adjunto se envía completo a Gemini; SendIA no extrae ni anonimiza el contenido de un PDF.</p><pre>{JSON.stringify({ mode, stage, area, objective, existingTask, requestedChange, constraints, interests, documentText, attachedFile: sourceDocument ? { name: sourceDocument.name, type: sourceDocument.type, size: sourceDocument.size } : null }, null, 2)}</pre></details>
-      <div className="case-actions"><button className="button button-primary" disabled={!consent || !area.trim() || !objective.trim() || (mode !== 'crear' && !existingTask.trim()) || (mode === 'modificar' && !requestedChange.trim()) || loading} onClick={create}>{loading ? 'Abriendo posibilidades…' : mode === 'crear' ? 'Diseñar actividad' : mode === 'adaptar' ? 'Proponer otras vías' : 'Preparar el cambio'} <span>→</span></button><span className="muted">Gemini prepara un borrador. No se guarda hasta que tú lo decidas.</span></div>
+      <div className="case-actions"><button className="button button-primary" disabled={!consent || (Boolean(sourceDocument) && !documentPrivacyConfirmed) || !area.trim() || !objective.trim() || (mode !== 'crear' && !existingTask.trim()) || (mode === 'modificar' && !requestedChange.trim()) || loading} onClick={create}>{loading ? 'Abriendo posibilidades…' : mode === 'crear' ? 'Diseñar actividad' : mode === 'adaptar' ? 'Proponer otras vías' : 'Preparar el cambio'} <span>→</span></button><span className="muted">Gemini prepara un borrador. No se guarda hasta que tú lo decidas.</span></div>
       {error && <p className="ai-error" role="alert">{error}</p>}{message && <p className="pilot-message" role="status">{message}</p>}
     </section>
 
