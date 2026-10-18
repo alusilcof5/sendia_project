@@ -35,7 +35,7 @@ Incluye 2–3 pasos cercanos («ahora») y 2–3 para conversar o revisar despu�
 
 REFERENCIAS ORIENTATIVAS CURADAS (no las has consultado en tiempo real; úsalas solo como contexto general, nunca digas que prueban una recomendación individual): ${JSON.stringify(familySourceSummaries)}. Devuelve entre 2 y 4 sourceIds existentes que sean pertinentes para el recorrido. No inventes citas. No afirmes que cada paso está demostrado por una fuente concreta.
 
-Usa español sencillo, cercano y no culpabilizador, sin jerga. Texto breve. Devuelve únicamente el JSON del esquema solicitado.`;
+Usá español rioplatense de Uruguay, sencillo, cercano y no culpabilizador, sin jerga. Dirigite a una persona adulta con voseo natural («podés», «elegí») y al grupo familiar con «ustedes»; evitá «vosotros» y sus formas. Mantené un tono profesional, sin forzar modismos. Texto breve. Devolvé únicamente el JSON del esquema solicitado.`;
 
 const requests = new Map<string, { count: number; until: number }>();
 function rateLimited(client: string): boolean {

@@ -104,7 +104,7 @@ export function ActionPlan() {
   return <AppShell><div className="content plans-page">
     <div className="eyebrow">SENDIA · PLANES QUE SE PUEDEN REVISAR</div>
     <section className="plans-hero">
-      <div className="plans-hero-copy"><span className="case-label">DE LA REFLEXIÓN A LA PRÁCTICA</span><h1>Un paso pequeño.<br/><em>Una nueva mirada.</em></h1><p>Elige qué probar, acuerda quién acompaña y vuelve a mirar qué ocurrió. Un plan es una guía flexible, no una etiqueta ni una obligación.</p><Link href="/comprender" className="plans-hero-link">Explorar otra situación <span>→</span></Link></div>
+      <div className="plans-hero-copy"><span className="case-label">DE LA REFLEXIÓN A LA PRÁCTICA</span><h1>Un paso pequeño.<br/><em>Una nueva mirada.</em></h1><p>Elegí qué probar, acordá quién acompaña y volvé a mirar qué ocurrió. Un plan es una guía flexible, no una etiqueta ni una obligación.</p><Link href="/comprender" className="plans-hero-link">Explorar otra situación <span>→</span></Link></div>
       <div className="plans-hero-art" aria-hidden="true"><span className="plans-hero-ring plans-ring-one"/><span className="plans-hero-ring plans-ring-two"/><span className="plans-hero-center">↗</span><span className="plans-hero-chip plans-chip-one">PROBAR</span><span className="plans-hero-chip plans-chip-two">OBSERVAR</span><span className="plans-hero-chip plans-chip-three">REVISAR</span></div>
     </section>
 

@@ -215,7 +215,7 @@ export function CollaborationHub() {
 
     <section className="collab-pilot-invite" aria-labelledby="collab-pilot-title">
       <div className="collab-pilot-mark" aria-hidden="true">◎</div>
-      <div className="collab-pilot-copy"><span className="eyebrow">PARA EQUIPOS QUE ESTÁN PROBANDO SENDIA</span><h2 id="collab-pilot-title">¿El recorrido resulta claro y útil?</h2><p>Si vuestro equipo está realizando un pilotaje, podéis recoger la percepción de las personas adultas antes y después de explorar la herramienta. Es una evaluación opcional para aprender qué funciona y qué conviene mejorar; no evalúa al estudiante ni demuestra que SendIA cause cambios.</p></div>
+      <div className="collab-pilot-copy"><span className="eyebrow">PARA EQUIPOS QUE ESTÁN PROBANDO SENDIA</span><h2 id="collab-pilot-title">¿El recorrido resulta claro y útil?</h2><p>Si el equipo está realizando un pilotaje, puede recoger la percepción de las personas adultas antes y después de explorar la herramienta. Es una evaluación opcional para aprender qué funciona y qué conviene mejorar; no evalúa al estudiante ni demuestra que SendIA cause cambios.</p></div>
       <Link className="button button-secondary" href="/impacto">Evaluar el pilotaje <span aria-hidden="true">→</span></Link>
     </section>
   </div></AppShell>;

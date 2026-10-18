@@ -24,14 +24,14 @@ export function HomePage() {
       <div>
         <span className="case-label">PARA FAMILIAS Y PROFESIONALES EDUCATIVOS</span>
         <h1 className="page-title serif">Empieza por<br/><em>una situación.</em></h1>
-        <p className="subtitle">Trabaja una situación real sin datos que identifiquen al estudiante, o prueba con un ejemplo. SendIA te ayudará a ordenar preguntas y acordar un siguiente paso.</p>
+        <p className="subtitle">Trabajá una situación real sin datos que identifiquen al estudiante, o probá con un ejemplo. SendIA te ayuda a ordenar preguntas y acordar un siguiente paso.</p>
         <div className="home-hero-actions"><Link className="home-hero-primary" href="/comprender?modo=propio">Comprender una situación <span>→</span></Link><Link className="home-hero-secondary" href="/crear">Crear o adaptar una actividad</Link></div>
       </div>
       <div className="home-hero-art" aria-hidden="true"><span className="home-hero-orbit home-hero-orbit-a"/><span className="home-hero-orbit home-hero-orbit-b"/><span className="home-hero-core">?</span><span className="home-hero-note home-note-one">OBSERVAR</span><span className="home-hero-note home-note-two">PREGUNTAR</span><span className="home-hero-note home-note-three">ACORDAR</span><span className="home-hero-art-caption">Una pregunta<br/>abre caminos.</span></div>
     </section>
 
     <section className="home-plan-overview" aria-labelledby="home-plans-title">
-      <div className="home-plan-overview-heading"><div><span className="eyebrow">TU SEGUIMIENTO</span><h2 id="home-plans-title">Los pasos también cuentan.</h2><p>Pequeños acuerdos que puedes revisar con el tiempo.</p></div><Link className="text-link" href="/planes/plan-aula">Abrir Mis planes <span>→</span></Link></div>
+      <div className="home-plan-overview-heading"><div><span className="eyebrow">TU SEGUIMIENTO</span><h2 id="home-plans-title">Los pasos también cuentan.</h2><p>Pequeños acuerdos que podés revisar con el tiempo.</p></div><Link className="text-link" href="/planes/plan-aula">Abrir Mis planes <span>→</span></Link></div>
       {!ready ? <div className="home-plan-empty"><p>Cargando tus planes guardados en este navegador…</p></div> : plans.length === 0 ? <div className="home-plan-empty"><span className="home-empty-mark" aria-hidden="true">↗</span><div><strong>Aún no hay un plan en marcha.</strong><p>Cuando explores una situación y guardes un paso, lo encontrarás aquí.</p></div><Link className="text-link" href="/comprender?modo=propio">Crear mi primer paso →</Link></div> : <div className="home-plan-summary"><div className="home-stat"><span className="home-stat-index">01</span><strong>{new Intl.NumberFormat(locale).format(activePlans.length)}</strong><span>planes en marcha</span></div><div className="home-stat"><span className="home-stat-index">02</span><strong>{new Intl.NumberFormat(locale).format(pendingActions)}</strong><span>acciones por revisar</span></div><div className="home-plan-latest"><span className="home-stat-index">EL MÁS RECIENTE</span><strong>{plans[0].title}</strong><span>Revisar este paso en «Mis planes».</span><Link href="/planes/plan-aula">Retomar el seguimiento →</Link></div></div>}
     </section>
 
@@ -39,7 +39,7 @@ export function HomePage() {
       <Link href="/comprender?modo=propio" className="panel home-start-card home-start-primary">
         <span className="home-card-number">01 · TU SITUACIÓN</span>
         <h2>Comprender antes de decidir</h2>
-        <p>Describe una situación real de forma anónima o usa una inventada. Responde preguntas guiadas; tú eliges si envías el texto a Gemini.</p>
+        <p>Describí una situación real sin datos identificativos o usá una inventada. Respondé preguntas guiadas; vos elegís si enviás el texto a Gemini.</p>
         <span className="text-link">Empezar paso a paso <span>→</span></span>
       </Link>
       <Link href="/comprender?modo=demo" className="panel home-start-card">

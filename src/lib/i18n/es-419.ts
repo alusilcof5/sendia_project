@@ -1,6 +1,6 @@
 import type { Situation } from '@/lib/schemas';
 
-export const locale = 'es-419' as const;
+export const locale = 'es-UY' as const;
 
 export const aiSituationLabels: Record<Situation, string> = {
   participation: 'participación', frustration: 'inicio y bloqueo', relationships: 'relaciones', challenge: 'reto y aprendizaje',
@@ -15,9 +15,9 @@ export const copy = {
   },
   flow: {
     describe: 'Cuéntanos qué ocurre.',
-    context: 'Añade contexto si lo sabes. Puedes dejarlo en blanco.',
-    question: 'Responde esta pregunta o pasa directamente a las opciones para probar.',
-    nextStep: 'Elige un paso pequeño. Podrás editarlo después en «Mis planes».',
+    context: 'Sumá contexto si lo sabés. Podés dejarlo en blanco.',
+    question: 'Respondé esta pregunta o pasá directamente a las opciones para probar.',
+    nextStep: 'Elegí un paso pequeño. Después podés editarlo en «Mis planes».',
   },
   privacy: {
     noStudentIdentifiers: 'No incluyas nombres ni datos que identifiquen a estudiantes.',
@@ -31,8 +31,8 @@ export const copy = {
   ],
 } as const;
 
-export type SupportedLocale = 'es-419' | 'pt-BR' | 'en';
-export const dictionaries: Partial<Record<SupportedLocale, typeof copy>> = { 'es-419': copy };
+export type SupportedLocale = 'es-UY' | 'pt-BR' | 'en';
+export const dictionaries: Partial<Record<SupportedLocale, typeof copy>> = { 'es-UY': copy };
 
 export const countries = [
   ['AG', 'Antigua y Barbuda'], ['AR', 'Argentina'], ['BS', 'Bahamas'], ['BB', 'Barbados'],

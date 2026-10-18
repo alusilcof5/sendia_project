@@ -2,7 +2,7 @@ export const understandingProfiles = {
   teacher: {
     label: 'Docentes',
     title: 'Desde el aula',
-    description: 'Explora qué ocurre durante una actividad y qué cambio pequeño puedes probar.',
+    description: 'Explorá qué ocurre durante una actividad y qué cambio pequeño podés probar.',
     example: 'Termina rápido y después se desconecta.',
     focus: 'aula',
     prompts: `PERFIL: DOCENTE EN EL AULA. Prioriza la meta curricular, la consigna, el ritmo, el agrupamiento, los apoyos y la voz del estudiante. Las propuestas deben ser ordinarias, realistas para el grupo, reversibles y aplicables con el tiempo y recursos descritos.`,
@@ -20,7 +20,7 @@ export const understandingProfiles = {
   family: {
     label: 'Familias',
     title: 'Desde casa',
-    description: 'Comprende una situación cotidiana y piensa cómo acompañar sin culpa ni presión.',
+    description: 'Comprendé una situación cotidiana y pensá cómo acompañar sin culpa ni presión.',
     example: 'Los deberes terminan en discusiones y no sabemos cómo ayudar.',
     focus: 'casa',
     prompts: `PERFIL: FAMILIA EN CASA. Usa lenguaje cálido, claro y libre de tecnicismos. Reconoce la preocupación sin culpabilizar al niño ni a la familia. Explora rutinas, contexto, bienestar, recursos y la voz del niño. Ofrece acciones pequeñas para casa, explica qué se busca observar y evita convertir a la familia en terapeuta o docente. Si la situación persiste, afecta al bienestar o dificulta el acceso al aprendizaje, sugiere conversar con el centro o con un profesional cualificado, sin inferir diagnósticos.`,
