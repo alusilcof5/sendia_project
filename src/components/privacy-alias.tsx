@@ -23,7 +23,7 @@ export function PrivacyAlias({ subject = 'estudiante' }: { subject?: string }) {
   };
 
   return <aside className="privacy-alias" aria-label="Crear un alias para proteger la identidad">
-    <div className="privacy-alias-copy"><strong>Antes de escribir, crea un alias</strong><p>No pongas el nombre real de {subject}. Usa el código en su lugar. El alias ayuda a evitar el nombre, pero no anonimiza otros detalles del relato o de los documentos.</p></div>
+    <div className="privacy-alias-copy"><strong>Regla de privacidad: un alias por situación</strong><p>No escribas el nombre real de {subject}. Generá un código aleatorio y usalo en tus notas en lugar del nombre. No incluyas iniciales, centro, localidad, fechas exactas, diagnósticos, puntuaciones ni detalles únicos. El alias por sí solo no anonimiza un relato ni un documento: quitá también cualquier pista que permita reconocer a la persona.</p></div>
     <div className="privacy-alias-actions"><button type="button" className="button button-secondary button-small" onClick={createAlias}>{alias ? 'Crear otro alias' : 'Crear alias'}</button>{alias && <><code aria-label="Alias generado">{alias}</code><button type="button" className="privacy-alias-copy-button" onClick={() => void copyAlias()}>Copiar</button></>}</div>
     {feedback && <span className="privacy-alias-feedback" role="status">{feedback}</span>}
   </aside>;

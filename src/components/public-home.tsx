@@ -4,6 +4,7 @@ import imgFive from '../app/images/img-five.png';
 import imgThree from '../app/images/img-three.png';
 import sendiaLogo from '../app/images/logo.png';
 import { copy } from '@/lib/i18n/es-419';
+import { LegalFooter } from '@/components/legal-footer';
 
 const steps = [
   { number: '01', title: 'Contá una situación concreta', text: 'Partí de una situación real sin datos identificativos o de un ejemplo ficticio. Escribí lo que viste u oíste; no necesitás saber la causa.', hint: 'Ejemplo: «En ejercicios repetitivos termina pronto; al empezar un proyecto abierto, tarda en comenzar».' },
@@ -41,6 +42,6 @@ export function PublicHome() {
 
     <section className="public-glossary" aria-labelledby="glossary-title"><h2 id="glossary-title">Palabras que pueden variar según el país</h2><p>SendIA usa estos términos con cuidado y no determina diagnósticos ni categorías educativas.</p><dl>{copy.glossary.map((item) => <div key={item.term}><dt>{item.term}</dt><dd>{item.definition}</dd></div>)}</dl></section>
 
-    <footer className="public-footer"><Link className="public-brand" href="/" aria-label="SendIA, inicio"><Image className="sendia-logo sendia-logo-footer" src={sendiaLogo} alt="SendIA"/></Link><span>Cada senda se descubre acompañando.</span><Link href="/propuesta">Propuesta académica →</Link><Link href="/espacio">Entrar al espacio personal →</Link></footer>
+    <footer className="public-footer"><div className="public-footer-main"><Link className="public-brand" href="/" aria-label="SendIA, inicio"><Image className="sendia-logo sendia-logo-footer" src={sendiaLogo} alt="SendIA"/><span className="public-footer-tagline">Cada senda se descubre acompañando.</span></Link><nav className="public-footer-nav" aria-label="Enlaces principales"><Link href="/propuesta">Propuesta académica <span aria-hidden="true">↗</span></Link><Link href="/espacio">Entrar al espacio personal <span aria-hidden="true">→</span></Link></nav></div><LegalFooter/></footer>
   </main>;
 }

@@ -6941,6 +6941,27 @@ body {
 .privacy-page li { margin-block: 8px; }
 .local-data-delete { border-color: #d98270; }
 
+.legal-footer { display:flex; align-items:center; justify-content:space-between; gap:14px 24px; flex-wrap:wrap; width:100%; padding:20px 46px 24px; border-top:1px solid var(--line); color:#737872; font-size:11px; }
+.legal-footer nav { display:flex; gap:10px 20px; flex-wrap:wrap; }
+.legal-footer a { color:#3657ff; text-decoration:underline; text-underline-offset:3px; }
+.legal-footer a:hover { color:#244c56; }
+.public-footer .legal-footer { flex-basis:100%; max-width:none; padding:17px 0 20px; }
+.legal-document { max-width:980px; padding-bottom:56px; }
+.legal-document .panel p { line-height:1.75; }
+.legal-document .panel a { color:#3657ff; text-decoration:underline; }
+.legal-updated { margin-top:20px; color:#747a74; font-size:12px; line-height:1.6; }
+.faq-list { display:grid; gap:12px; }
+.faq-item { padding:20px 22px; }
+.faq-item summary { cursor:pointer; font-weight:700; font-size:16px; }
+.faq-item p { margin-bottom:0; line-height:1.7; }
+.alias-rule-callout { margin-top:22px; padding:20px 24px; background:#c7f464; border:1px solid #25242a; border-radius:12px; line-height:1.65; }
+.alias-rule-callout p { margin:6px 0 0; }
+
+@media (max-width:850px) {
+  .legal-footer { padding:18px 22px 24px; }
+  .public-footer .legal-footer { padding-inline:8px; }
+}
+
 /* Crear: taller docente de actividades revisables. */
 .creator-page { padding-top: 34px; padding-bottom: 80px; }
 .creator-hero { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(250px, .6fr); align-items: center; gap: 40px; margin: 10px 0 28px; padding: clamp(28px, 4.8vw, 58px); color: #fffdf7; background: #3657ff; }
@@ -8223,6 +8244,46 @@ body {
 .institution-page button:focus-visible,.institution-page a:focus-visible { outline: 3px solid #3657ff; outline-offset: 3px; }
 .collab-primary-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .collab-section-heading a:not(.button) { color: #2948df; font-weight: 700; text-underline-offset: 3px; }
+
+/* Footer hierarchy: brand/navigation first, legal links in a quiet second row. */
+.public-footer {
+  display: block;
+  width: min(100% - 48px, 1132px);
+  max-width: 1132px;
+  min-height: 0;
+  margin: 30px auto 0;
+  padding: 22px 0 0;
+  border-top: 1px solid #dedbd2;
+  color: #62636a;
+  font-size: 12px;
+}
+.public-footer-main { display:flex; align-items:center; justify-content:space-between; gap:24px; padding-bottom:20px; }
+.public-footer .public-brand { display:flex; align-items:center; gap:14px; min-width:0; }
+.public-footer .sendia-logo-footer { width:48px; height:48px; }
+.public-footer-tagline { color:#5f6260; font-size:13px; line-height:1.45; }
+.public-footer-nav { display:flex; align-items:center; justify-content:flex-end; gap:12px 28px; flex-wrap:wrap; }
+.public-footer-nav a { color:#303633; font-size:12px; font-weight:600; text-decoration:none; }
+.public-footer-nav a:hover { color:#3657ff; text-decoration:underline; text-underline-offset:4px; }
+.public-footer-nav a span { margin-left:4px; color:#3657ff; }
+.public-footer .legal-footer { flex-basis:auto; max-width:none; margin:0; padding:15px 0 20px; border-top:1px solid #e8e5dd; }
+.legal-footer { align-items:center; justify-content:space-between; gap:12px 24px; padding:18px 46px 22px; color:#70716f; font-size:11px; line-height:1.5; }
+.legal-footer > span { color:#62636a; }
+.legal-footer-contact { display:grid; gap:3px; }
+.legal-footer-contact > span { color:#62636a; }
+.legal-footer-contact > a { color:#62636a; text-decoration:none; }
+.legal-footer-contact > a:hover { color:#3657ff; text-decoration:underline; }
+.legal-footer nav { justify-content:flex-end; gap:8px 22px; }
+.legal-footer a { color:#42444b; font-weight:500; text-decoration:none; text-underline-offset:4px; }
+.legal-footer a:hover { color:#3657ff; text-decoration:underline; }
+.main > .legal-footer { margin-top:28px; background:#fffdf7; }
+@media (max-width:700px) {
+  .public-footer { width:calc(100% - 36px); margin-top:20px; padding-top:18px; }
+  .public-footer-main { align-items:flex-start; flex-direction:column; gap:16px; }
+  .public-footer-nav { justify-content:flex-start; gap:12px 20px; }
+  .public-footer .legal-footer { align-items:flex-start; flex-direction:column; gap:10px; }
+  .legal-footer { padding:16px 20px 20px; }
+  .legal-footer nav { justify-content:flex-start; gap:8px 16px; }
+}
 @media (max-width: 800px) {
   .institution-share-fields { grid-template-columns: 1fr 1fr; }
   .institution-share-fields label:first-child { grid-column: 1 / -1; }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/app-shell';
 import { parseCreatedActivity, parseSavedActivity, type ActivityVariant, type CreatedActivity } from '@/lib/created-activity';
 import { PrivacyAlias } from '@/components/privacy-alias';
+import { findDirectIdentifiers, identifierMessage } from '@/lib/privacy';
 
 const storageKey = 'sendia-created-activities-v1';
 const routeLabels: Record<ActivityVariant['route'], string> = { representacion: 'Otra forma de acceder', expresion: 'Otra forma de demostrarlo', profundizacion: 'Más profundidad o elección' };
@@ -49,16 +50,16 @@ export function ActivityCreator() {
 
   const create = async () => {
     if (!consent || (sourceDocument && !documentPrivacyConfirmed) || !area.trim() || !objective.trim()) return;
+    const identifiers = findDirectIdentifiers([area, objective, existingTask, requestedChange, constraints, interests, documentText].join('\n'));
+    if (identifiers.length) {
+      setError(identifierMessage(identifiers.map(({ kind }) => kind)));
+      setMessage('No se envió nada a Gemini. Editá los campos o el documento y volvé a revisar.');
+      return;
+    }
     setLoading(true); setError(''); setMessage(''); setCurrent(null);
     try {
       const payload = { mode, agentMode, stage: stageLabel, level: stage, grade, subsystem, area, objective, existingTask, requestedChange, constraints, interests, documentText, adultConsent: consent, documentPrivacyConfirmed };
-      let response: Response;
-      if (sourceDocument && (sourceDocument.type === 'application/pdf' || sourceDocument.name.toLowerCase().endsWith('.pdf'))) {
-        const form = new FormData(); form.set('payload', JSON.stringify(payload)); form.set('document', sourceDocument);
-        response = await fetch('/api/crear', { method: 'POST', body: form });
-      } else {
-        response = await fetch('/api/crear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      }
+      const response = await fetch('/api/crear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const result: unknown = await response.json();
       if (!response.ok) throw new Error(result && typeof result === 'object' && 'error' in result && typeof result.error === 'string' ? result.error : 'No se pudo crear la actividad.');
       const parsed = parseCreatedActivity(result);
@@ -121,15 +122,22 @@ export function ActivityCreator() {
   const selectDocument = async (file?: File) => {
     setSourceDocument(null); setDocumentText(''); setConsent(false); setDocumentPrivacyConfirmed(false); setError(''); setMessage('');
     if (!file) return;
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     const isText = ['.txt', '.md'].some((extension) => file.name.toLowerCase().endsWith(extension)) || file.type === 'text/plain' || file.type === 'text/markdown';
-    if (!isPdf && !isText) { setError('Formato no compatible. Sube un PDF, TXT o Markdown.'); return; }
-    if (isPdf && file.size > 8 * 1024 * 1024) { setError('El PDF debe pesar menos de 8 MB.'); return; }
+    if (!isText) { setError('Por privacidad, SendIA no acepta PDF ni imágenes en este prototipo. Pegá solo un fragmento revisado o adjuntá un TXT/Markdown.'); return; }
     if (isText && file.size > 100 * 1024) { setError('El documento de texto debe pesar menos de 100 KB.'); return; }
-    if (isPdf) { setSourceDocument(file); setMessage('PDF seleccionado. Se enviará a Gemini junto con los campos que revises.'); return; }
     try {
-      const text = await file.text();
+      const text = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer());
+      if (text.startsWith('%PDF-') || /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(text)) {
+        setError('El archivo no parece texto plano. No se adjuntó ni se envió.');
+        return;
+      }
       if (text.length > 30_000) { setError('El documento contiene demasiado texto. Reduce el archivo a 30.000 caracteres.'); return; }
+      const identifiers = findDirectIdentifiers(text);
+      if (identifiers.length) {
+        setError(identifierMessage(identifiers.map(({ kind }) => kind)));
+        setMessage('El documento no se adjuntó y no se envió. Quitá esos datos en una copia local y volvé a seleccionarla.');
+        return;
+      }
       setSourceDocument(file); setDocumentText(text); setMessage('Documento de texto seleccionado. Se incluirá su contenido en la propuesta.');
     } catch { setError('No se pudo leer el documento.'); }
   };
@@ -160,12 +168,12 @@ export function ActivityCreator() {
         {mode !== 'crear' && <label className="creator-full">La actividad que ya tenés <span className="optional-label">(necesaria para adaptarla)</span><textarea className="textarea" maxLength={3000} value={existingTask} onChange={(event) => setExistingTask(event.target.value)} placeholder="Pegá la consigna o describí brevemente la tarea. Quitá nombres y datos personales."/></label>}
         {mode !== 'crear' && <label className="creator-full">{mode === 'modificar' ? '¿Qué querés cambiar?' : '¿Qué te gustaría abrir o facilitar?'} <span className="optional-label">{mode === 'modificar' ? '(necesario)' : '(opcional)'}</span><textarea className="textarea" maxLength={1200} value={requestedChange} onChange={(event) => setRequestedChange(event.target.value)} placeholder="Ej.: ofrecer una opción visual, permitir otra forma de explicar o reducir la espera…"/></label>}
         <details className="creator-extra-details creator-full"><summary>Añadir contexto opcional: tiempo, recursos o intereses</summary><div className="creator-fields"><label>Tiempo, materiales o límites<textarea className="textarea" maxLength={800} value={constraints} onChange={(event) => setConstraints(event.target.value)} placeholder="Tiempo disponible, materiales cotidianos, trabajo individual o en equipo…"/></label><label>Intereses o fortalezas expresados<textarea className="textarea" maxLength={800} value={interests} onChange={(event) => setInterests(event.target.value)} placeholder="Solo información general y explícita, sin identificar a nadie."/></label></div></details>
-        <label className="creator-document creator-full"><strong>¿Tenés un material que quieras usar?</strong><span className="optional-label">Opcional · podés adjuntar un solo documento</span><input type="file" accept=".pdf,.txt,.md,application/pdf,text/plain,text/markdown" onChange={(event) => { void selectDocument(event.target.files?.[0]); event.currentTarget.value = ''; }}/><small>PDF hasta 8 MB o TXT/Markdown hasta 100 KB. Se envía completo a Gemini. Usá un alias y revisá todo el documento: SendIA no puede detectar ni borrar nombres dentro de un PDF.</small>{sourceDocument && <span className="creator-file-chip"><b>{sourceDocument.name}</b><button type="button" onClick={() => selectDocument(undefined)}>Quitar documento</button></span>}</label>
-        {sourceDocument && <label className="creator-document-check creator-full"><input type="checkbox" checked={documentPrivacyConfirmed} onChange={(event) => setDocumentPrivacyConfirmed(event.target.checked)}/><span>He revisado el documento completo y he retirado nombres, centros, datos de contacto, identificadores e información que permita reconocer a un estudiante.</span></label>}
+        <label className="creator-document creator-full"><strong>¿Tenés un material que quieras usar?</strong><span className="optional-label">Opcional · un archivo de texto</span><input type="file" accept=".txt,.md,text/plain,text/markdown" onChange={(event) => { void selectDocument(event.target.files?.[0]); event.currentTarget.value = ''; }}/><small>Solo TXT/Markdown hasta 100 KB. Por ahora no aceptamos PDF ni imágenes: SendIA no puede revisar nombres dentro de ellos antes de enviarlos. El texto de los archivos se analiza con filtros básicos de identificadores; esos filtros no garantizan anonimato. Revisá el contenido completo y adjuntá solo una copia sin datos personales.</small>{sourceDocument && <span className="creator-file-chip"><b>{sourceDocument.name}</b><button type="button" onClick={() => selectDocument(undefined)}>Quitar documento</button></span>}</label>
+        {sourceDocument && <label className="creator-document-check creator-full"><input type="checkbox" checked={documentPrivacyConfirmed} onChange={(event) => setDocumentPrivacyConfirmed(event.target.checked)}/><span>Revisé el texto completo, quité nombres y datos sensibles y comprobé que no queden detalles que permitan reconocer a alguien. Entiendo que un filtro automático no garantiza anonimato.</span></label>}
       </div>
       <aside className="creator-safety"><b>Un criterio importante</b><p>No hace falta indicar que un estudiante tiene AACC ni otra condición. Describí la meta, lo que observás y qué opción educativa querés explorar. SENDIA no asignará necesidades por una etiqueta.</p></aside>
-      <label className="ai-consent creator-consent"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)}/><span>Soy una persona adulta, usé alias en lugar de nombres reales, revisé que no haya datos identificativos y acepto enviar estos campos a Gemini para preparar la propuesta.</span></label>
-      <details className="send-preview"><summary>Ver la información que se enviará</summary><p>{agentMode === 'aula-aci' ? 'También se consultará el programa curricular público de ANEP que corresponde al nivel, grado y asignatura.' : 'La información curricular pública no se consulta con el diseño general.'} {sourceDocument ? 'El documento adjunto se envía completo a Gemini; SendIA no extrae ni anonimiza el contenido de un PDF.' : ''}</p><pre>{JSON.stringify({ mode, agentMode, stage: stageLabel, level: stage, grade, subsystem: stage === 'primaria' ? undefined : subsystem, area, objective, existingTask, requestedChange, constraints, interests, documentText, attachedFile: sourceDocument ? { name: sourceDocument.name, type: sourceDocument.type, size: sourceDocument.size } : null }, null, 2)}</pre></details>
+      <label className="ai-consent creator-consent"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)}/><span>Soy una persona adulta. Revisé los campos y el texto adjunto, quité datos directos y pistas que podrían identificar a alguien, y acepto enviar este contenido a Gemini. Los filtros automáticos son limitados; no voy a enviar información personal real de estudiantes.</span></label>
+      <details className="send-preview"><summary>Ver los textos que enviarás</summary><p>SendIA envía los campos de esta solicitud a su servidor y este los remite a Gemini para generar la propuesta. {agentMode === 'aula-aci' ? 'También se consultará el programa curricular público de ANEP correspondiente.' : ''} {sourceDocument ? 'Del archivo se envía solo el texto leído localmente; no se envían el archivo original ni su nombre.' : ''}</p><pre>{JSON.stringify({ mode, agentMode, stage: stageLabel, level: stage, grade, subsystem: stage === 'primaria' ? undefined : subsystem, area, objective, existingTask, requestedChange, constraints, interests, documentText }, null, 2)}</pre><p>La revisión automática busca algunos identificadores directos. No reconoce todas las personas ni las pistas indirectas; revisá vos el texto y no envíes datos reales de estudiantes.</p></details>
       <div className="case-actions"><button className="button button-primary" disabled={!consent || (Boolean(sourceDocument) && !documentPrivacyConfirmed) || !area.trim() || !objective.trim() || (mode !== 'crear' && !existingTask.trim()) || (mode === 'modificar' && !requestedChange.trim()) || loading} onClick={create}>{loading ? 'Abriendo posibilidades…' : mode === 'crear' ? agentMode === 'aula-aci' ? 'Crear con AULA ACI' : 'Diseñar actividad' : mode === 'adaptar' ? 'Proponer otras vías' : 'Preparar el cambio'} <span>→</span></button><span className="muted">Gemini prepara un borrador. No se guarda hasta que vos lo decidas.</span></div>
       {error && <p className="ai-error" role="alert">{error}</p>}{message && <p className="pilot-message" role="status">{message}</p>}
     </section>

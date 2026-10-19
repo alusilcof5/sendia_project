@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { copy } from '@/lib/i18n/es-419';
 import sendiaLogo from '@/app/images/logo.png';
+import { LegalFooter } from '@/components/legal-footer';
 
 type NavIconName = 'home' | 'explore' | 'family' | 'create' | 'plans' | 'team' | 'building' | 'private' | 'impact' | 'ideas' | 'workspace' | 'map';
 
@@ -51,8 +52,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link href="/comprender/casa" className={`nav-link nav-link-sub ${active === '/comprender/casa' ? 'active' : ''}`} aria-current={pathname === '/comprender/casa' ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="family"/></span><span>Desde casa</span></Link>
         <div className="nav-subgroup-home"><Link href="/familias" className={`nav-link nav-link-sub nav-link-home ${pathname === '/familias' ? 'active' : ''}`} aria-current={pathname === '/familias' ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="family"/></span><span>Hoja de ruta</span></Link><Link href="/familias/recursos" className={`nav-link nav-link-sub nav-link-home ${pathname.startsWith('/familias/recursos') ? 'active' : ''}`} aria-current={pathname.startsWith('/familias/recursos') ? 'page' : undefined}><span className="nav-icon"><NavGlyph name="map"/></span><span>Mapa de apoyos · Uruguay</span></Link></div>
       </div>}</div>)}</nav>
-      <div className="sidebar-bottom"><div className="privacy-note"><strong>Protege la identidad</strong>Usa un alias ficticio. No escribas nombres ni datos que identifiquen a estudiantes. {copy.product.noDiagnosis}<Link href="/datos">Cómo cuidamos los datos →</Link></div><div className="profile"><div className="avatar" aria-hidden="true">MR</div><div><div className="profile-name">Marta Rivas · Docente</div><div className="profile-role">Perfil ficticio · demostración</div></div></div></div>
+      <div className="sidebar-bottom"><div className="privacy-note"><strong>Regla de privacidad</strong>Usa un alias aleatorio por situación. Quita nombres y pistas identificativas; el alias no garantiza anonimato. {copy.product.noDiagnosis}<Link href="/privacidad">Política de privacidad →</Link></div><div className="profile"><div className="avatar" aria-hidden="true">MR</div><div><div className="profile-name">Marta Rivas · Docente</div><div className="profile-role">Perfil ficticio · demostración</div></div></div></div>
     </aside>
-    <main className="main"><header className="topbar"><div className="crumb">SendIA <span> / {current}</span></div><div className="top-actions"><span className="demo-pill">◈ &nbsp;Entorno de demostración</span></div></header>{children}</main>
+    <main className="main"><header className="topbar"><div className="crumb">SendIA <span> / {current}</span></div><div className="top-actions"><span className="demo-pill">◈ &nbsp;Entorno de demostración</span></div></header>{children}<LegalFooter/></main>
   </div>;
 }
