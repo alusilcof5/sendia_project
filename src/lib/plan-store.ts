@@ -1,4 +1,5 @@
 import type { ActionPlan } from '@/lib/schemas';
+import { assertNoDirectIdentifiers, findDirectIdentifiers } from '@/lib/privacy';
 
 export const plansStorageKey = 'sendia-plans-v1';
 export const previousPlansStorageKey = 'miradas-plans-v1';
@@ -76,7 +77,8 @@ export function readPlans(): StoredPlan[] {
     }
     const result = [...byId.values()];
     if (result.length && (localStorage.getItem(plansStorageKey) === null || result.length !== readList(plansStorageKey).length)) {
-      localStorage.setItem(plansStorageKey, JSON.stringify(result));
+      const serialized = JSON.stringify(result);
+      if (!findDirectIdentifiers(serialized).length) localStorage.setItem(plansStorageKey, serialized);
     }
     return result;
   } catch {
@@ -85,6 +87,7 @@ export function readPlans(): StoredPlan[] {
 }
 
 export function writePlans(plans: StoredPlan[]) {
+  assertNoDirectIdentifiers(JSON.stringify(plans));
   localStorage.setItem(plansStorageKey, JSON.stringify(plans));
 }
 

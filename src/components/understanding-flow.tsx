@@ -231,8 +231,11 @@ function OwnSituation({ onBack, initialCase, betaMode, profile, initialProfile }
       strategies: [{ id: 'ai-step', title: selectedStrategy.strategy, detail: selectedStrategy.strategy, responsible: draftStep.responsible, cadence: draftStep.reviewIn }],
       reviewDate: existing?.reviewDate ?? deriveReviewDate(draftStep.reviewIn), status: 'approved', source: initialCase || betaMode ? 'demo' : 'ai',
       question: draftStep.question, indicator: draftStep.indicator, why: draftStep.why, completedStrategies: existing?.completedStrategies ?? [], reviews: existing?.reviews ?? [] });
-    upsertPlan(saved); setPlanId(saved.id);
-    setApproved(true);
+    try {
+      upsertPlan(saved); setPlanId(saved.id); setApproved(true); setError('');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo guardar el plan. Revisá que no incluya datos identificativos.');
+    }
   };
   const content = <div className="content case-experience">
     {initialCase && betaMode ? <a className="case-back-link own-back" href="/beta/docentes/casos">← Volver a los casos docentes</a> : <button className="case-back-link own-back" onClick={() => { const hasDraft = Boolean(observation.trim() || learningGoal.trim() || context.trim() || support.trim() || knownNeeds.trim()); if (hasDraft && !window.confirm('El texto de esta situación no se guarda automáticamente. Si vuelves ahora, se borrará. ¿Quieres salir?')) return; onBack(); }}>{initialCase ? '← Cambiar ejemplo' : initialProfile ? '← Cambiar de espacio' : '← Volver a elegir recorrido'}</button>}

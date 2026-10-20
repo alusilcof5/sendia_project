@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { containsDirectIdentifier, findDirectIdentifiers, findPossibleNameWarnings, identifierMessage } from '../src/lib/privacy.ts';
+import { assertNoDirectIdentifiers, containsDirectIdentifier, findDirectIdentifiers, findPossibleNameWarnings, identifierMessage, isDisallowedDocumentUpload } from '../src/lib/privacy.ts';
 
 test('detecta datos personales y de instituciones educativas en un texto compuesto', () => {
   const input = 'María García López, 4ºB del CEIP San Juan de Barcelona, DNI 12345678Z, tiene un diagnóstico de TDAH';
@@ -27,6 +27,37 @@ test('detecta documentos regionales y direcciones, y marca posibles nombres para
   assert.equal(containsDirectIdentifier('CPF 123.456.789-09'), true);
   assert.equal(containsDirectIdentifier('Vive en Calle Roble 123, Lima'), true);
   assert.deepEqual(findPossibleNameWarnings('María participa más en tareas abiertas.'), ['María']);
+});
+
+test('detecta identificadores sintéticos habituales en Uruguay', () => {
+  for (const input of [
+    'CI: 4.123.456-7',
+    'C.I. 4.123.456-7',
+    'Celular 099 123 456',
+    'Celular +598 99 123 456',
+    'Teléfono 2 900 1234',
+    'Fecha de nacimiento: 03/04/2014',
+    'Nació el 3-4-2014',
+  ]) assert.equal(containsDirectIdentifier(input), true, input);
+});
+
+test('no bloquea una descripción educativa general sin identificadores conocidos', () => {
+  const input = 'En matemática, el grupo puede elegir explicar con palabras o un esquema. Revisaremos la opción dentro de una semana.';
+  assert.equal(containsDirectIdentifier(input), false);
+  assert.doesNotThrow(() => assertNoDirectIdentifiers(input));
+});
+
+test('el bloqueo de persistencia detecta nombres en campos etiquetados', () => {
+  assert.throws(() => assertNoDirectIdentifiers('{"responsible":"Ana Lucía Silva"}'), /datos identificativos/);
+});
+
+test('la política del endpoint rechaza cuerpos multipart usados para enviar PDF o imágenes', () => {
+  const form = new FormData();
+  form.set('payload', JSON.stringify({ adultConsent: true }));
+  form.set('document', new Blob(['%PDF-1.7 synthetic content']), 'caso-ficticio.pdf');
+  const request = new Request('http://localhost/api/crear', { method: 'POST', body: form });
+  assert.equal(isDisallowedDocumentUpload(request.headers.get('content-type')), true);
+  assert.equal(isDisallowedDocumentUpload('application/json'), false);
 });
 
 test('construye un mensaje común para interfaz y endpoint', () => {

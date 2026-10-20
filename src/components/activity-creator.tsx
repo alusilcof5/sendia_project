@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/app-shell';
 import { parseCreatedActivity, parseSavedActivity, type ActivityVariant, type CreatedActivity } from '@/lib/created-activity';
 import { PrivacyAlias } from '@/components/privacy-alias';
-import { findDirectIdentifiers, identifierMessage } from '@/lib/privacy';
+import { assertNoDirectIdentifiers, findDirectIdentifiers, identifierMessage } from '@/lib/privacy';
 
 const storageKey = 'sendia-created-activities-v1';
 const routeLabels: Record<ActivityVariant['route'], string> = { representacion: 'Otra forma de acceder', expresion: 'Otra forma de demostrarlo', profundizacion: 'Más profundidad o elección' };
@@ -79,8 +79,8 @@ export function ActivityCreator() {
   const save = () => {
     if (!current) return;
     if (!reviewConfirmed) { setError('Confirma que revisaste la propuesta antes de guardarla.'); return; }
-    try { parseCreatedActivity(current); }
-    catch { setError('Completa los campos editados antes de guardar la actividad.'); return; }
+    try { parseCreatedActivity(current); assertNoDirectIdentifiers(JSON.stringify(current)); }
+    catch (cause) { setError(cause instanceof Error && cause.message.includes('datos identificativos') ? cause.message : 'Completa los campos editados antes de guardar la actividad.'); return; }
     const next = [current, ...saved.filter((item) => item.id !== current.id)].slice(0, 30);
     try { localStorage.setItem(storageKey, JSON.stringify(next)); setSaved(next); setMessage('Actividad guardada en este navegador.'); }
     catch { setError('No se pudo guardar. Comprueba el espacio disponible en este navegador.'); }
@@ -89,12 +89,12 @@ export function ActivityCreator() {
     if (!current || !reviewConfirmed || !followUpDraft.tried.trim() || !followUpDraft.observed.trim()) return;
     const updated = { ...current, followUps: [...(current.followUps || []), { ...followUpDraft, tried: followUpDraft.tried.trim(), observed: followUpDraft.observed.trim(), nextStep: followUpDraft.nextStep.trim(), recordedAt: new Date().toISOString() }].slice(-20) };
     try {
-      parseCreatedActivity(updated);
+      parseCreatedActivity(updated); assertNoDirectIdentifiers(JSON.stringify(updated));
       const next = [updated, ...saved.filter((item) => item.id !== updated.id)].slice(0, 30);
       localStorage.setItem(storageKey, JSON.stringify(next));
       setCurrent(updated); setSaved(next); setFollowUpDraft({ tried: '', observed: '', nextStep: '' });
       setMessage('Seguimiento guardado junto a la actividad en este navegador.'); setError('');
-    } catch { setError('No se pudo guardar el seguimiento. Revisá el texto y el espacio disponible.'); }
+    } catch (cause) { setError(cause instanceof Error && cause.message.includes('datos identificativos') ? cause.message : 'No se pudo guardar el seguimiento. Revisá el texto y el espacio disponible.'); }
   };
   const prepareFollowUpReview = (entry: NonNullable<CreatedActivity['followUps']>[number]) => {
     if (!current) return;
@@ -108,6 +108,8 @@ export function ActivityCreator() {
   };
   const copy = async () => {
     if (!current) return;
+    try { assertNoDirectIdentifiers(JSON.stringify(current)); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Revisa el contenido antes de compartirlo.'); return; }
     const text = [current.title, `Objetivo: ${current.objective}`, `Etapa: ${current.stage} · Área: ${current.area}`, `Duración: ${current.duration}`, ...(current.pedagogicalRationale ? [`Fundamentación: ${current.pedagogicalRationale}`] : []), `Materiales: ${current.materials.join(', ')}`, 'Pasos:', ...current.steps.map((step, i) => `${i + 1}. ${step}`), ...current.variants.filter((variant) => variant.teacherDecision !== 'descartar').map((variant) => `\n${routeLabels[variant.route]} — ${variant.title} (${variant.teacherDecision || 'pendiente'})\n${variant.task}\nMateriales: ${variant.materials}\nObservar: ${variant.observe}`), ...(current.evaluationCriteria ? [`\nCriterios de evaluación:\n${current.evaluationCriteria.join('\n')}`] : []), ...(current.evaluationInstrument ? [`Instrumento: ${current.evaluationInstrument}`] : []), ...(current.teacherGuidance ? [`Orientación docente: ${current.teacherGuidance}`] : []), ...(current.curriculumSources ? [`Fuentes curriculares ANEP:\n${current.curriculumSources.map((source) => `${source.title} — ${source.url}`).join('\n')}`] : []), `\nRevisión docente: ${current.reviewNote}`, ...(current.followUps?.length ? [`\nRegistro de seguimiento:\n${current.followUps.map((item) => `Probó: ${item.tried}\nObservó: ${item.observed}\nPróximo paso: ${item.nextStep || 'A definir'}`).join('\n\n')}`] : [])].join('\n');
     try { await navigator.clipboard.writeText(text); setMessage('Actividad copiada. Revísala y ajústala antes de compartirla.'); }
     catch { setMessage('No se pudo copiar automáticamente. Puedes seleccionar el contenido y copiarlo.'); }
@@ -143,8 +145,8 @@ export function ActivityCreator() {
   };
   const downloadReviewed = () => {
     if (!current || !reviewConfirmed) return;
-    try { parseCreatedActivity(current); }
-    catch { setError('Completa los campos editados antes de descargar la propuesta.'); return; }
+    try { parseCreatedActivity(current); assertNoDirectIdentifiers(JSON.stringify(current)); }
+    catch (cause) { setError(cause instanceof Error && cause.message.includes('datos identificativos') ? cause.message : 'Completa los campos editados antes de descargar la propuesta.'); return; }
     const escape = (value: string) => value.replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character] ?? character);
     const list = (values: string[]) => `<ul>${values.map((value) => `<li>${escape(value)}</li>`).join('')}</ul>`;
     const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${escape(current.title)}</title><style>body{font:16px/1.6 Arial,sans-serif;max-width:850px;margin:48px auto;padding:0 24px;color:#28272d}h1,h2{line-height:1.2}h1{font-size:32px}h2{margin-top:32px;color:#3657ff}article{border-top:1px solid #ddd;padding:18px 0;break-inside:avoid}.meta{color:#666;font-size:14px}.note{background:#f2f7e8;padding:16px}a{color:#2948df;overflow-wrap:anywhere}</style></head><body><p class="meta">SENDIA · PROPUESTA DECIDIDA POR DOCENTE${current.agentMode === 'aula-aci' ? ' · AULA ACI' : ''}</p><h1>${escape(current.title)}</h1><p><b>Etapa:</b> ${escape(current.stage)} · <b>Área:</b> ${escape(current.area)} · <b>Duración:</b> ${escape(current.duration)}</p><h2>Meta de aprendizaje</h2><p>${escape(current.objective)}</p>${current.pedagogicalRationale ? `<h2>Fundamentación del diseño</h2><p>${escape(current.pedagogicalRationale)}</p>` : ''}<h2>Materiales</h2>${list(current.materials)}<h2>Desarrollo</h2>${list(current.steps)}<h2>Vías elegidas por la persona docente</h2>${current.variants.filter((variant) => variant.teacherDecision !== 'descartar').map((variant) => `<article><h3>${escape(routeLabels[variant.route])}: ${escape(variant.title)} · ${variant.teacherDecision === 'ajustar' ? 'ajustada por docente' : 'seleccionada por docente'}</h3><p><b>Qué cambia:</b> ${escape(variant.change)}</p><p><b>Consigna:</b> ${escape(variant.task)}</p><p><b>Materiales:</b> ${escape(variant.materials)}</p><p><b>Observar:</b> ${escape(variant.observe)}</p></article>`).join('') || '<p>La persona docente decidió no incluir vías opcionales.</p>'}${current.evaluationCriteria?.length ? `<h2>Criterios de evaluación</h2>${list(current.evaluationCriteria)}` : ''}${current.evaluationInstrument ? `<h2>Instrumento breve</h2><p>${escape(current.evaluationInstrument)}</p>` : ''}${current.teacherGuidance ? `<h2>Orientación para quien enseña</h2><p>${escape(current.teacherGuidance)}</p>` : ''}${current.curriculumSources?.length ? `<h2>Documentos curriculares consultados</h2><ul>${current.curriculumSources.map((source) => `<li><a href="${escape(source.url)}">${escape(source.title)}</a></li>`).join('')}</ul>` : ''}<h2>Antes de usar</h2><p class="note">${escape(current.reviewNote)}</p>${current.followUps?.length ? `<h2>Seguimiento registrado por la persona docente</h2>${current.followUps.map((item) => `<article><p><b>Qué probó:</b> ${escape(item.tried)}</p><p><b>Qué observó:</b> ${escape(item.observed)}</p><p><b>Próximo paso:</b> ${escape(item.nextStep || 'A definir')}</p></article>`).join('')}` : ''}<p class="meta">Borrador generado con IA y revisado por una persona docente. La propuesta no diagnostica ni sustituye el criterio profesional. Contrastar con el contexto del grupo.</p></body></html>`;

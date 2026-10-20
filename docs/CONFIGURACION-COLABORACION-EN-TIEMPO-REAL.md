@@ -6,7 +6,7 @@ El tablero usa Supabase para guardar salas y notas, sincronizar cambios en tiemp
 
 1. Crea un proyecto Supabase.
 2. En **Authentication → Providers**, habilita **Anonymous Sign-Ins**.
-3. Ejecuta `supabase/migrations/202610160001_idea_boards.sql` desde el SQL Editor de Supabase.
+3. En el mismo proyecto Supabase, ejecuta en este orden `supabase/migrations/202610160001_idea_boards.sql`, `supabase/migrations/202610180001_institutional_workspace.sql` y `supabase/migrations/202610190001_shared_content_safety.sql`. Si las dos primeras ya se aplicaron correctamente, ejecuta solo la tercera.
 4. Copia Project URL y la clave `anon`/publishable al `.env.local` local y al entorno de despliegue:
 
    ```env

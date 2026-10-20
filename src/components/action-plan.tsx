@@ -42,8 +42,8 @@ export function ActionPlan() {
       setDraft(null);
       setMessage(success);
       return true;
-    } catch {
-      setMessage('No se pudo guardar en este navegador. Comprueba el espacio disponible y vuelve a intentarlo.');
+    } catch (error) {
+      setMessage(error instanceof Error && error.message.includes('datos identificativos') ? error.message : 'No se pudo guardar en este navegador. Comprueba el espacio disponible y vuelve a intentarlo.');
       return false;
     }
   };

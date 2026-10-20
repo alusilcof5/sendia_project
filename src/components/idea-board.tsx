@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { AppShell } from '@/components/app-shell';
 import { ensureAnonymousSession, supabaseBrowserClient } from '@/lib/supabase-browser';
+import { assertNoDirectIdentifiers } from '@/lib/privacy';
 
 type Board = { id: string; title: string; owner_id: string };
 type Note = { id: string; board_id: string; author_id: string; author_role: Role; column_key: ColumnKey; body: string; color: NoteColor; created_at: string };
@@ -20,7 +21,7 @@ const columns: { id: ColumnKey; title: string; prompt: string; color: string }[]
   { id: 'probar', title: 'Ideas pequeñas para probar', prompt: 'Opciones posibles, revisables y de bajo riesgo.', color: 'yellow' },
 ];
 const noteColors: NoteColor[] = ['yellow', 'lilac', 'lime', 'coral'];
-const supabaseSetup = `1. Crea un proyecto en Supabase y activa Authentication → Sign In / Providers → Anonymous Sign-Ins.\n2. Ejecuta supabase/migrations/202610160001_idea_boards.sql en el SQL Editor.\n3. Copia Project URL y Publishable key a .env.local como NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.\n4. Reinicia npm run dev.`;
+const supabaseSetup = `1. Crea un proyecto en Supabase y activa Authentication → Sign In / Providers → Anonymous Sign-Ins.\n2. En este mismo proyecto, ejecuta 202610160001_idea_boards.sql.\n3. Ejecuta 202610180001_institutional_workspace.sql.\n4. Ejecuta 202610190001_shared_content_safety.sql.\n5. Copia Project URL y Publishable key a .env.local como NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.\n6. Reinicia npm run dev.`;
 
 function rows<T>(value: unknown): T[] { return Array.isArray(value) ? value as T[] : []; }
 function roomRow(value: unknown): Record<string, unknown> | null { return Array.isArray(value) && value[0] && typeof value[0] === 'object' ? value[0] as Record<string, unknown> : value && typeof value === 'object' ? value as Record<string, unknown> : null; }
@@ -101,6 +102,7 @@ export function IdeaBoard() {
     if (!client || !title.trim()) return;
     setLoading(true); setMessage('');
     try {
+      assertNoDirectIdentifiers(title.trim());
       const { data, error } = await client.rpc('create_idea_board', { p_title: title.trim(), p_role: role });
       if (error) throw error;
       const result = roomRow(data);
@@ -128,6 +130,8 @@ export function IdeaBoard() {
   const addNote = async (column: ColumnKey) => {
     if (!client || !board || !session || !drafts[column].trim()) return;
     setLoading(true); setMessage('');
+    try { assertNoDirectIdentifiers(drafts[column].trim()); }
+    catch (cause) { setMessage(cause instanceof Error ? cause.message : 'Quitá los datos identificativos antes de guardar.'); setLoading(false); return; }
     const color = noteColors[notes.filter((note) => note.column_key === column).length % noteColors.length];
     const { error } = await client.from('idea_notes').insert({ board_id: board.id, author_id: session.user.id, author_role: role, column_key: column, body: drafts[column].trim(), color });
     if (error) setMessage(error.message); else { setDrafts((current) => ({ ...current, [column]: '' })); await refreshBoard(board, session.user.id); }
@@ -136,6 +140,8 @@ export function IdeaBoard() {
 
   const saveEdit = async () => {
     if (!client || !board || !session || !editing || !editing.text.trim()) return;
+    try { assertNoDirectIdentifiers(editing.text.trim()); }
+    catch (cause) { setMessage(cause instanceof Error ? cause.message : 'Quitá los datos identificativos antes de guardar.'); return; }
     const { error } = await client.from('idea_notes').update({ body: editing.text.trim(), updated_at: new Date().toISOString() }).eq('id', editing.id).eq('board_id', board.id).eq('author_id', session.user.id);
     if (error) setMessage(error.message); else { setEditing(null); await refreshBoard(board, session.user.id); }
   };

@@ -9,10 +9,12 @@ El espacio de equipo reúne planes aprobados y su seguimiento entre profesionale
 
 1. En Supabase, abre **SQL Editor → New query**.
 2. Copia y ejecuta el contenido de `supabase/migrations/202610180001_institutional_workspace.sql`.
-3. En **Authentication → Providers**, habilita el acceso por correo electrónico.
-4. En **Authentication → URL Configuration**, permite la URL de tu aplicación, por ejemplo `http://localhost:3000/colaboracion/equipo`, y la URL equivalente de producción.
-5. Usa la URL y la clave pública de Supabase que ya usa SendIA. No añadas una clave `service_role` al navegador.
-6. Reinicia la aplicación y abre `/colaboracion/equipo`.
+3. Si también usas la lluvia de ideas, ejecuta antes `supabase/migrations/202610160001_idea_boards.sql`.
+4. Ejecuta `supabase/migrations/202610190001_shared_content_safety.sql` para validar contenido compartido en la base de datos y proteger campos de autorización de los planes. Necesita las migraciones base de lluvia de ideas y del espacio institucional.
+5. En **Authentication → Providers**, habilita el acceso por correo electrónico.
+6. En **Authentication → URL Configuration**, permite la URL de tu aplicación, por ejemplo `http://localhost:3000/colaboracion/equipo`, y la URL equivalente de producción.
+7. Usa la URL y la clave pública de Supabase que ya usa SendIA. No añadas una clave `service_role` al navegador.
+8. Reinicia la aplicación y abre `/colaboracion/equipo`.
 
 ## Recorrido
 

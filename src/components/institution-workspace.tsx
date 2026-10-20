@@ -197,7 +197,7 @@ export function InstitutionWorkspace() {
     const plan = approvedPlans.find((item) => item.id === selectedPlanId);
     if (!plan || !caseAlias.trim() || !shareConfirmed) return;
     const sharedData: TeamPlanData = { caseAlias: caseAlias.trim(), status: plan.status, reviewDate: plan.reviewDate, strategies: plan.strategies, ...(plan.indicator ? { indicator: plan.indicator } : {}) };
-    const identifiable = findDirectIdentifiers(JSON.stringify({ title: plan.title, objective: plan.objective, strategies: plan.strategies }));
+    const identifiable = findDirectIdentifiers(JSON.stringify({ caseAlias, title: plan.title, objective: plan.objective, strategies: plan.strategies, indicator: plan.indicator }));
     if (identifiable.length) { setError(identifierMessage(identifiable.map(({ kind }) => kind))); return; }
     setBusy(true);
     try {

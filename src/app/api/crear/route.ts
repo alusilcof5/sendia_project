@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { generateStructuredGemini, GeminiAgentError } from '@/lib/agents/gemini';
 import { parseCreatedActivity } from '@/lib/created-activity';
-import { findDirectIdentifiers, identifierMessage } from '@/lib/privacy';
+import { findDirectIdentifiers, identifierMessage, isDisallowedDocumentUpload } from '@/lib/privacy';
 import { isStringRecord } from '@/lib/schemas';
 import { aulaAciSchemaProperties, aulaAciSystem } from '@/lib/agents/aula-aci';
 import { findANEPPrograms, type CurriculumLevel } from '@/lib/curriculum/anep';
@@ -52,7 +52,7 @@ Mantén exactamente el objetivo educativo declarado. Prepara una actividad centr
 export async function POST(request: Request) {
   const length = Number(request.headers.get('content-length') || 0);
   if (Number.isFinite(length) && length > 160 * 1024) return NextResponse.json({ error: 'La solicitud supera el máximo permitido.' }, { status: 413 });
-  if (request.headers.get('content-type')?.includes('multipart/form-data')) {
+  if (isDisallowedDocumentUpload(request.headers.get('content-type'))) {
     return NextResponse.json({ error: 'Por privacidad, SendIA no recibe PDF ni imágenes. Extrae y revisa localmente un fragmento de texto, o adjunta un TXT/Markdown sin identificadores.' }, { status: 415 });
   }
   let body: unknown;

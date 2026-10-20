@@ -83,15 +83,25 @@ alter table public.idea_board_members enable row level security;
 alter table public.idea_notes enable row level security;
 alter table public.idea_note_votes enable row level security;
 
+drop policy if exists "members can read boards" on public.idea_boards;
 create policy "members can read boards" on public.idea_boards for select to authenticated using (public.is_idea_board_member(id));
+drop policy if exists "owners can delete boards" on public.idea_boards;
 create policy "owners can delete boards" on public.idea_boards for delete to authenticated using (owner_id = auth.uid());
+drop policy if exists "members can read membership" on public.idea_board_members;
 create policy "members can read membership" on public.idea_board_members for select to authenticated using (public.is_idea_board_member(board_id));
+drop policy if exists "members can read notes" on public.idea_notes;
 create policy "members can read notes" on public.idea_notes for select to authenticated using (public.is_idea_board_member(board_id));
+drop policy if exists "members can add notes as themselves" on public.idea_notes;
 create policy "members can add notes as themselves" on public.idea_notes for insert to authenticated with check (public.is_idea_board_member(board_id) and author_id = auth.uid());
+drop policy if exists "authors can edit their notes" on public.idea_notes;
 create policy "authors can edit their notes" on public.idea_notes for update to authenticated using (public.is_idea_board_member(board_id) and author_id = auth.uid()) with check (public.is_idea_board_member(board_id) and author_id = auth.uid());
+drop policy if exists "authors can remove their notes" on public.idea_notes;
 create policy "authors can remove their notes" on public.idea_notes for delete to authenticated using (public.is_idea_board_member(board_id) and author_id = auth.uid());
+drop policy if exists "members can read votes" on public.idea_note_votes;
 create policy "members can read votes" on public.idea_note_votes for select to authenticated using (public.is_idea_board_member(board_id));
+drop policy if exists "members can vote once" on public.idea_note_votes;
 create policy "members can vote once" on public.idea_note_votes for insert to authenticated with check (public.is_idea_board_member(board_id) and user_id = auth.uid());
+drop policy if exists "members can remove their votes" on public.idea_note_votes;
 create policy "members can remove their votes" on public.idea_note_votes for delete to authenticated using (public.is_idea_board_member(board_id) and user_id = auth.uid());
 
 revoke all on function public.create_idea_board(text, text) from public;
@@ -104,7 +114,19 @@ grant delete on public.idea_boards to authenticated;
 grant insert, update, delete on public.idea_notes to authenticated;
 grant insert, delete on public.idea_note_votes to authenticated;
 
-alter publication supabase_realtime add table public.idea_boards;
-alter publication supabase_realtime add table public.idea_board_members;
-alter publication supabase_realtime add table public.idea_notes;
-alter publication supabase_realtime add table public.idea_note_votes;
+do $$ begin
+  alter publication supabase_realtime add table public.idea_boards;
+exception when duplicate_object then null;
+end $$;
+do $$ begin
+  alter publication supabase_realtime add table public.idea_board_members;
+exception when duplicate_object then null;
+end $$;
+do $$ begin
+  alter publication supabase_realtime add table public.idea_notes;
+exception when duplicate_object then null;
+end $$;
+do $$ begin
+  alter publication supabase_realtime add table public.idea_note_votes;
+exception when duplicate_object then null;
+end $$;

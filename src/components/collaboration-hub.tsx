@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppShell } from '@/components/app-shell';
 import { demoPlan } from '@/lib/demo-data';
 import { readPlans, type StoredPlan } from '@/lib/plan-store';
+import { assertNoDirectIdentifiers } from '@/lib/privacy';
 
 const storageKey = 'sendia-team-agreements-v1';
 
@@ -88,11 +89,12 @@ export function CollaborationHub() {
       savedAt: new Date().toISOString(), fictitious: isFictitious,
     };
     try {
+      assertNoDirectIdentifiers(JSON.stringify(agreement));
       const updated = [agreement, ...agreements];
       localStorage.setItem(storageKey, JSON.stringify(updated));
       setAgreements(updated); setMessage('Acuerdo guardado en este navegador.');
       setNotes({}); setConfirmed(false);
-    } catch { setMessage('No se pudo guardar. Comprueba el espacio disponible del navegador.'); }
+    } catch (cause) { setMessage(cause instanceof Error && cause.message.includes('datos identificativos') ? cause.message : 'No se pudo guardar. Comprueba el espacio disponible del navegador.'); }
   };
 
   const removeAgreement = (id: string) => {
@@ -117,6 +119,7 @@ export function CollaborationHub() {
     ].join('\n\n');
     setShareMessage(null);
     try {
+      assertNoDirectIdentifiers(text);
       if (navigator.share) {
         await navigator.share({ title: `Acuerdo SendIA · ${agreement.planTitle}`, text });
         setShareMessage({ id: agreement.id, text: 'Se abrió la opción de compartir del dispositivo. Elige tú con quién y por qué canal compartirlo.' });
@@ -136,7 +139,7 @@ export function CollaborationHub() {
       setShareMessage({ id: agreement.id, text: 'Resumen descargado. Revísalo antes de compartirlo.' });
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') return;
-      setShareMessage({ id: agreement.id, text: 'No se pudo preparar el resumen para compartir.' });
+      setShareMessage({ id: agreement.id, text: error instanceof Error && error.message.includes('datos identificativos') ? error.message : 'No se pudo preparar el resumen para compartir.' });
     }
   };
 
